@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse.ant.import?>
+<project basedir="." default="clean+makejar" name="fitbit_activity">
+    <property environment="env"/>
+    <property name="ECLIPSE_HOME" value="../../../../../../../../opt/eclipse/"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+	
+	<property name="class.dir" value="bin"/>
+	<property name="lib.dir" value="lib"/>
+	
+	<property name="jar.dir" value="jar"/>
+	<property name="activity.jar.name" value="download_data.jar"/>
+	<property name="jar.file" value="${jar.dir}/${activity.jar.name}.jar"/>
+	
+	<property name="jar.export.dir" value="${user.home}/bin"/>
+	<property name="jar.export.file" value="${jar.export.dir}/${activity.jar.name}"/>
+	
+	<property name="main-class" value="uk.co.ticklethepanda.fitbit.data.ActivityIntradayDriver"/>
+	
+    <path id="libraries.path">
+        <pathelement location="lib/joda-time-2.4.jar"/>
+        <pathelement location="lib/commons-codec-1.10.jar"/>
+        <pathelement location="lib/gson-2.3.1.jar"/>
+    </path>
+		
+    <target name="init">
+        <mkdir dir="${class.dir}"/>
+        <copy includeemptydirs="false" todir="${class.dir}">
+            <fileset dir="modules">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="${class.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="init-copyjar">
+		<mkdir dir="${jar.export.dir}"/>
+    </target>
+	<target name="init-makejar">
+		<mkdir dir="jar"/>
+	</target>
+	
+    <target name="clean">
+        <delete dir="${class.dir}"/>
+    </target>
+	<target name="clean-makejar">
+		<delete dir="${jar.dir}"/>
+	</target>
+	<target name="clean-copyjar">
+		<delete file="${jar.export.file}" failonerror="false"/>
+	</target>
+    <target depends="clean,clean-makejar,clean-copyjar" name="cleanall"/>
+	
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="false" debuglevel="${debuglevel}" destdir="${class.dir}" includeantruntime="false" source="${source}" target="${target}">
+        	<src path="modules"/>
+            <src path="src"/>
+        	<classpath refid="libraries.path"/>
+        </javac>
+    </target>
+
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+	
+	<target depends="build-project,init-makejar" name ="makejar" description="Create a jar for the fitbit_activity project">
+		<jar jarfile="${jar.dir}/${activity.jar.name}" basedir="${class.dir}">
+			<zipgroupfileset dir="${lib.dir}" includes="**/*.jar" />
+			<manifest>
+        		<attribute name="Main-Class" value="${main-class}"/>
+	    	</manifest>
+		</jar>
+		<antcall target="copyjar"/>
+	</target>
+	
+	<target depends="init-copyjar" name="copyjar" description="Copy existing jar to user bin">
+		<copy todir="${jar.export.dir}" flatten="true">
+			<fileset dir="${jar.dir}">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target depends="cleanall,makejar" name="clean+makejar"/>
+</project>
