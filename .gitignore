@@ -1,0 +1,16 @@
+#image files
+*.png
+
+#imported libraries
+*.jar
+modules/*
+
+#builds
+bin/*
+
+#personal files
+config.properties
+
+#personal settings
+.settings/*
+.project
