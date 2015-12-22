@@ -3,32 +3,36 @@ package uk.co.ticklethepanda.fitbit;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import uk.co.ticklethepanda.fitbit.dao.DAOException;
-import uk.co.ticklethepanda.fitbit.dao.DayActivityDao;
-import uk.co.ticklethepanda.fitbit.dao.DayActivityDaoWebApi;
+import uk.co.ticklethepanda.fitbit.activity.IntradayActivityRange;
+import uk.co.ticklethepanda.fitbit.activity.MinuteActivitySeries;
+import uk.co.ticklethepanda.fitbit.webapi.DaoException;
+import uk.co.ticklethepanda.fitbit.webapi.UserAndClientTokens;
+import uk.co.ticklethepanda.utility.Profiler;
+import uk.co.ticklethepanda.fitbit.activity.IntradayActivityDao;
+import uk.co.ticklethepanda.fitbit.activity.IntradayActivityDaoWebApi;
 
 public class ActivityToChartsDriver {
     private final static LocalDate firstDay = LocalDate.of(2014, 07, 15);
 
-    public static void main(String[] args) throws DAOException, IOException {
+    public static void main(String[] args) throws DaoException, IOException {
 	
 	UserAndClientTokens tokens = UserAndClientTokens.loadTokensFromProperties();
 	
 	Profiler.printTimeElapsed("starting");
 
-	final DayActivityDao dayActivityDao = new DayActivityDaoWebApi(tokens);
+	final IntradayActivityDao intradayActivityDao = new IntradayActivityDaoWebApi(tokens);
 
-	ActivityCollection activityRange = dayActivityDao.getActivityRange(firstDay,
+	IntradayActivityRange intradayActivityRange = intradayActivityDao.getIntradayActivityRange(firstDay,
 		LocalDate.now());
 	Profiler.printTimeElapsed("getting activity");
 
-	activityRange.getAverageDayActivity();
+	intradayActivityRange.getAverageDayActivity();
 	Profiler.printTimeElapsed("calculating average activity");
 
-	MinuteActivitySeries series = activityRange.getCumulativeDayActivity();
+	MinuteActivitySeries series = intradayActivityRange.getCumulativeDayActivity();
 	Profiler.printTimeElapsed("calculating cumulative activity");
 
-	activityRange.getTotalSteps();
+	intradayActivityRange.getTotalSteps();
 	Profiler.printTimeElapsed("getting total steps from series");
 
 	System.out.println("totalSteps: " + series.getTotalSteps());

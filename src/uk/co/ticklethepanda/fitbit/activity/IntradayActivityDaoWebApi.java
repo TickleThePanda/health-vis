@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit.dao;
+package uk.co.ticklethepanda.fitbit.activity;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -21,14 +21,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 
-import uk.co.ticklethepanda.fitbit.ActivityCollection;
-import uk.co.ticklethepanda.fitbit.ActivityForDate;
-import uk.co.ticklethepanda.fitbit.UserAndClientTokens;
-import uk.co.ticklethepanda.fitbit.dao.cache.CacheLayerException;
-import uk.co.ticklethepanda.fitbit.dao.cache.DayActivityCacheLayer;
-import uk.co.ticklethepanda.fitbit.time.LocalDateRange;
+import uk.co.ticklethepanda.fitbit.caching.CacheLayerException;
+import uk.co.ticklethepanda.fitbit.webapi.DaoException;
+import uk.co.ticklethepanda.fitbit.webapi.FitbitApi;
+import uk.co.ticklethepanda.fitbit.webapi.UserAndClientTokens;
+import uk.co.ticklethepanda.utility.LocalDateRange;
 
-public class DayActivityDaoWebApi implements DayActivityDao {
+public class IntradayActivityDaoWebApi implements IntradayActivityDao {
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -78,7 +77,7 @@ public class DayActivityDaoWebApi implements DayActivityDao {
 
     private static final int ONE_SECOND = 1000;
 
-    private final DayActivityCacheLayer activityCache = new DayActivityCacheLayer();
+    private final IntradayActivityCacheLayer activityCache = new IntradayActivityCacheLayer();
 
     private final OAuthService service;
 
@@ -86,7 +85,7 @@ public class DayActivityDaoWebApi implements DayActivityDao {
 
     private final FitbitApi fitbitApi;
 
-    public DayActivityDaoWebApi(final UserAndClientTokens tokens) {
+    public IntradayActivityDaoWebApi(final UserAndClientTokens tokens) {
 	this.tokens = tokens;
 	this.fitbitApi = new FitbitApi();
 	
@@ -97,24 +96,24 @@ public class DayActivityDaoWebApi implements DayActivityDao {
     }
 
     @Override
-    public ActivityCollection getActivityRange(LocalDate start, LocalDate end)
-	    throws DAOException {
-	List<ActivityForDate> range = new ArrayList<ActivityForDate>();
+    public IntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
+	    throws DaoException {
+	List<IntradayActivity> range = new ArrayList<IntradayActivity>();
 	for (LocalDate date : new LocalDateRange(start, end)) {
 	    range.add(this.getDayActivity(date));
 	}
-	return new ActivityCollection(range);
+	return new IntradayActivityRange(range);
     }
 
     @Override
-    public ActivityForDate getDayActivity(LocalDate date) throws DAOException {
+    public IntradayActivity getDayActivity(LocalDate date) throws DaoException {
 
-	ActivityForDate value = null;
+	IntradayActivity value = null;
 	try {
 	    logger.debug("getting values for date " + date.toString() + " from cache.");
 	    value = activityCache.getValue(date);
 	} catch (CacheLayerException e) {
-	    throw new DAOException("Could not day activity from cache", e);
+	    throw new DaoException("Could not day activity from cache", e);
 	}
 
 	if (value == null || !value.isFullDay()) {
@@ -124,7 +123,7 @@ public class DayActivityDaoWebApi implements DayActivityDao {
 		logger.debug("saving value for date " + date.toString() + " to cache.");
 		activityCache.save(value);
 	    } catch (CacheLayerException e) {
-		throw new DAOException("Could not save value to cache", e);
+		throw new DaoException("Could not save value to cache", e);
 	    }
 	}
 	return value;
@@ -151,28 +150,28 @@ public class DayActivityDaoWebApi implements DayActivityDao {
 	return available;
     }
 
-    private boolean isSecondResponseRequired(Response response) throws DAOException {
+    private boolean isSecondResponseRequired(Response response) throws DaoException {
 	
 	if (response.getHeader(RETRY_AFTER_HEADER) != null) {
 	    long waitTime = RateLimitStatus.parseWaitTime(response);
 	    try {
 		Thread.sleep(waitTime);
 	    } catch (InterruptedException e) {
-		throw new DAOException("Could not wait for response.", e);
+		throw new DaoException("Could not wait for response.", e);
 	    }
 	    return true;
 	}
 	return false;
     }
 
-    private ActivityForDate retrieveOnlineIntradayData(LocalDate date) throws DAOException {
+    private IntradayActivity retrieveOnlineIntradayData(LocalDate date) throws DaoException {
 	Response response = this.createRequestForDate(date).send();
 	
 	if (isSecondResponseRequired(response)) {
 	    response = this.createRequestForDate(date).send();
 	}
 	
-	return GSON.fromJson(response.getBody(), ActivityForDate.class);
+	return GSON.fromJson(response.getBody(), IntradayActivity.class);
     }
 
     private OAuthRequest createRequestForDate(LocalDate date) {
@@ -184,8 +183,8 @@ public class DayActivityDaoWebApi implements DayActivityDao {
     }
 
     @Override
-    public void saveDayActivity(ActivityForDate date) throws DAOException {
-	throw new DAOException("Cannot upload DayActivity to fitbit",
+    public void saveDayActivity(IntradayActivity activity) throws DaoException {
+	throw new DaoException("Cannot upload DayActivity to fitbit",
 		new UnsupportedOperationException(
 			"Cannot upload Day Activity to fitbit"));
     }

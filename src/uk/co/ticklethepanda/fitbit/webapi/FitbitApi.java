@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit.dao;
+package uk.co.ticklethepanda.fitbit.webapi;
 
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.Token;

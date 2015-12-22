@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.fitbit.webapi;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.fitbit.activity;
 
 import java.time.LocalTime;
 import java.util.ArrayList;

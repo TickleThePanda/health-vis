@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit.time;
+package uk.co.ticklethepanda.utility;
 
 import java.time.LocalDate;
 import java.util.Iterator;

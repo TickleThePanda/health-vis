@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.fitbit.activity;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -11,20 +11,20 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
-public class ActivityCollection implements Iterable<ActivityForDate> {
+public class IntradayActivityRange implements Iterable<IntradayActivity> {
 
-    private final List<ActivityForDate> activities;
+    private final List<IntradayActivity> activities;
 
-    public ActivityCollection() {
+    public IntradayActivityRange() {
 	this.activities = new ArrayList<>();
     }
 
-    public ActivityCollection(List<ActivityForDate> activity) {
+    public IntradayActivityRange(List<IntradayActivity> activity) {
 	this.activities = new ArrayList<>(activity);
     }
 
     public boolean contains(LocalDate date) {
-	for (ActivityForDate activity : this) {
+	for (IntradayActivity activity : this) {
 	    if (activity.getDate().equals(date)) {
 		return true;
 	    }
@@ -47,16 +47,16 @@ public class ActivityCollection implements Iterable<ActivityForDate> {
 		Collectors.summingDouble(MinuteActivity::getStepCount));
     }
 
-    public ActivityCollection getWhereDayOfWeek(DayOfWeek dayOfWeek) {
+    public IntradayActivityRange getWhereDayOfWeek(DayOfWeek dayOfWeek) {
 	return getWherePredicate(a -> a.getDate().getDayOfWeek().equals(dayOfWeek));
     }
 
-    public ActivityCollection getWhereMonth(Month month) {
+    public IntradayActivityRange getWhereMonth(Month month) {
 	return getWherePredicate(a -> a.getDate().getMonth().equals(month));
     }
 
     @Override
-    public Iterator<ActivityForDate> iterator() {
+    public Iterator<IntradayActivity> iterator() {
 	return activities.iterator();
     }
 
@@ -73,9 +73,9 @@ public class ActivityCollection implements Iterable<ActivityForDate> {
 		Collectors.groupingBy(MinuteActivity::getTime, collector)));
     }
 
-    private ActivityCollection getWherePredicate(
-	    Predicate<? super ActivityForDate> predicate) {
-	return new ActivityCollection(activities.parallelStream().filter(predicate)
+    private IntradayActivityRange getWherePredicate(
+	    Predicate<? super IntradayActivity> predicate) {
+	return new IntradayActivityRange(activities.parallelStream().filter(predicate)
 		.collect(Collectors.toList()));
     }
 }

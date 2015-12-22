@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit.dao.cache;
+package uk.co.ticklethepanda.fitbit.caching;
 
 public class CacheLayerException extends Exception {
 

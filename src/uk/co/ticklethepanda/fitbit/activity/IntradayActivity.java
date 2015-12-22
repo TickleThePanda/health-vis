@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.fitbit.activity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ActivityForDate implements Iterable<MinuteActivity> {
+public class IntradayActivity implements Iterable<MinuteActivity> {
 
     private static class DateStatistics {
 
@@ -42,7 +42,7 @@ public class ActivityForDate implements Iterable<MinuteActivity> {
     @Expose
     private MinuteActivitySeries minuteActivitySeries;
 
-    public ActivityForDate(LocalDate date, MinuteActivitySeries intradaySet) {
+    public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
 	dayStatistics.add(new DateStatistics(date));
 	this.minuteActivitySeries = intradaySet;
     }
