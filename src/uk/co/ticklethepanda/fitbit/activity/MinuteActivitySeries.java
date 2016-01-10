@@ -7,59 +7,58 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class MinuteActivitySeries implements Iterable<MinuteActivity> {
 
-    @SerializedName("dataset")
-    @Expose
-    private List<MinuteActivity> dataset;
+  public static MinuteActivitySeries fromMap(Map<LocalTime, Double> map) {
+    return new MinuteActivitySeries(
+        map.keySet().stream().map(a -> new MinuteActivity(a, map.get(a)))
+            .sorted((a, b) -> a.getTime().compareTo(b.getTime()))
+            .collect(Collectors.toList()));
+  }
 
-    public MinuteActivitySeries(List<MinuteActivity> activity) {
-	dataset = new ArrayList<MinuteActivity>(activity);
-    }
+  @SerializedName("dataset")
+  @Expose
+  private List<MinuteActivity> dataset;
 
-    public MinuteActivitySeries() {
-	dataset = new ArrayList<MinuteActivity>();
-    }
+  public MinuteActivitySeries() {
+    dataset = new ArrayList<MinuteActivity>();
+  }
 
-    /**
-     * 
-     * @return The dataset
-     */
-    public List<MinuteActivity> getElements() {
-	return dataset;
-    }
+  public MinuteActivitySeries(List<MinuteActivity> activity) {
+    dataset = new ArrayList<MinuteActivity>(activity);
+  }
 
-    /**
-     * 
-     * @param dataset
-     *            The dataset
-     */
-    public void setDataset(List<MinuteActivity> dataset) {
-	this.dataset = dataset;
-    }
+  public MinuteActivity getByLocalTime(LocalTime plusMinutes) {
+    return dataset.stream().filter(a -> a.getTime().equals(plusMinutes))
+        .findFirst().get();
+  }
 
-    public Iterator<MinuteActivity> iterator() {
-	return dataset.iterator();
-    }
+  /**
+   * 
+   * @return The dataset
+   */
+  public List<MinuteActivity> getElements() {
+    return dataset;
+  }
 
-    public Double getTotalSteps() {
-	return dataset.stream().mapToDouble(MinuteActivity::getStepCount).sum();
-    }
+  public Double getTotalSteps() {
+    return dataset.stream().mapToDouble(MinuteActivity::getStepCount).sum();
+  }
 
-    public static MinuteActivitySeries fromMap(Map<LocalTime, Double> map) {
-	return new MinuteActivitySeries(
-		map.keySet().stream().map(a -> new MinuteActivity(a, map.get(a)))
-			.sorted((a, b) -> a.getTime().compareTo(b.getTime()))
-			.collect(Collectors.toList()));
-    }
+  public Iterator<MinuteActivity> iterator() {
+    return dataset.iterator();
+  }
 
-    public MinuteActivity getByLocalTime(LocalTime plusMinutes) {
-	return dataset.stream().filter(a -> a.getTime().equals(plusMinutes))
-		.findFirst().get();
-    }
+  /**
+   * 
+   * @param dataset
+   *          The dataset
+   */
+  public void setDataset(List<MinuteActivity> dataset) {
+    this.dataset = dataset;
+  }
 
 }

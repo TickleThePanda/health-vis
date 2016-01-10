@@ -8,48 +8,50 @@ import java.util.Properties;
 import org.scribe.model.Token;
 
 public class UserAndClientTokens {
-    private final Token clientToken;
-    private final Token userToken;
+  public static UserAndClientTokens loadTokensFromProperties() throws IOException {
+    Properties prop = getProperties();
 
-    public UserAndClientTokens(Token clientToken, Token userToken) {
-	this.clientToken = clientToken;
-	this.userToken = userToken;
-    }
+    String clientKey = prop.getProperty("clientKey");
+    String clientSecret = prop.getProperty("clientSecret");
 
-    private static Properties getProperties() throws IOException, FileNotFoundException {
-	Properties prop = new Properties();
-	String propFileName = "config.properties";
+    String userKey = prop.getProperty("userKey");
+    String userSecret = prop.getProperty("userSecret");
 
-	InputStream inputStream = UserAndClientTokens.class.getClassLoader().getResourceAsStream(propFileName);
+    Token userToken = new Token(userKey, userSecret);
+    Token clientToken = new Token(clientKey, clientSecret);
 
-	if (inputStream != null) {
-	    prop.load(inputStream);
-	} else {
-	    throw new FileNotFoundException("The file \"" + propFileName + "\" was not found. If this is the first time running this software, this file must be created by hand");
-	}
-	return prop;
+    return new UserAndClientTokens(clientToken, userToken);
+  }
+
+  private static Properties getProperties() throws IOException, FileNotFoundException {
+    Properties prop = new Properties();
+    String propFileName = "config.properties";
+
+    InputStream inputStream = UserAndClientTokens.class.getClassLoader().getResourceAsStream(propFileName);
+
+    if (inputStream != null) {
+      prop.load(inputStream);
+    } else {
+      throw new FileNotFoundException("The file \"" + propFileName
+          + "\" was not found. If this is the first time running this software, this file must be created by hand");
     }
-    
-    public static UserAndClientTokens loadTokensFromProperties() throws IOException {
-	Properties prop = getProperties();
-	
-	String userKey = prop.getProperty("userKey");
-	String userSecret = prop.getProperty("userSecret");
-	
-	String clientKey = prop.getProperty("clientKey");
-	String clientSecret = prop.getProperty("clientSecret");
-	
-	Token userToken = new Token(userKey, userSecret);
-	Token clientToken = new Token(clientKey, clientSecret);
-	
-	return new UserAndClientTokens(clientToken, userToken);
-    }
-    
-    public Token getClientToken() {
-	return clientToken;
-    }
-    
-    public Token getUserToken() {
-	return userToken;
-    }
+    return prop;
+  }
+
+  private final Token clientToken;
+
+  private final Token userToken;
+
+  public UserAndClientTokens(Token clientToken, Token userToken) {
+    this.clientToken = clientToken;
+    this.userToken = userToken;
+  }
+
+  public Token getClientToken() {
+    return clientToken;
+  }
+
+  public Token getUserToken() {
+    return userToken;
+  }
 }
