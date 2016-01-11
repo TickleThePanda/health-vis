@@ -9,11 +9,11 @@ public class MinuteActivity {
 
   @SerializedName("time")
   @Expose
-  private String timeString;
+  private final String timeString;
 
   @SerializedName("value")
   @Expose
-  private Double numberSteps;
+  private final Double numberSteps;
 
   public MinuteActivity(LocalTime time, Double value) {
     this.timeString = time.toString();
@@ -21,21 +21,21 @@ public class MinuteActivity {
   }
 
   /**
-   * 
+   *
    * @return The value
    */
   public Double getStepCount() {
-    return numberSteps;
+    return this.numberSteps;
   }
 
   public LocalTime getTime() {
-    return LocalTime.parse(timeString);
+    return LocalTime.parse(this.timeString);
   }
 
   @Override
   public String toString() {
-    return "MinuteActivity [timeString=" + timeString + ", numberSteps="
-        + numberSteps + "]\n";
+    return "MinuteActivity [timeString=" + this.timeString + ", numberSteps="
+        + this.numberSteps + "]\n";
   }
 
 }

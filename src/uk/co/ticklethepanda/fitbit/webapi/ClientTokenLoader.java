@@ -8,29 +8,29 @@ import java.util.Properties;
 
 public class ClientTokenLoader {
 
-  private Properties properties;
+  private final Properties properties;
 
   public ClientTokenLoader() throws FileNotFoundException, IOException {
-    this.properties = loadProperties();
-  }
-
-  private Properties loadProperties() throws IOException, FileNotFoundException {
-    Properties prop = new Properties();
-    String propFileName = "config.properties";
-
-    InputStream inputStream = new FileInputStream(propFileName);
-
-    prop.load(inputStream);
-    
-    return prop;
+    this.properties = this.loadProperties();
   }
 
   public ClientCredentials loadFromProperties() throws IOException {
-    String userKey = properties.getProperty("clientKey");
-    String userSecret = properties.getProperty("clientSecret");
+    final String userKey = this.properties.getProperty("clientKey");
+    final String userSecret = this.properties.getProperty("clientSecret");
 
-    ClientCredentials userToken = new ClientCredentials(userKey, userSecret);
+    final ClientCredentials userToken = new ClientCredentials(userKey, userSecret);
     return userToken;
+  }
+
+  private Properties loadProperties() throws IOException, FileNotFoundException {
+    final Properties prop = new Properties();
+    final String propFileName = "config.properties";
+
+    final InputStream inputStream = new FileInputStream(propFileName);
+
+    prop.load(inputStream);
+
+    return prop;
   }
 
 }

@@ -30,19 +30,19 @@ public class IntradayActivityCacheLayer
     this.cacheDir = DEFAULT_CACHE_LOC;
     this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
         .create();
-    new File(cacheDir).mkdirs();
+    new File(this.cacheDir).mkdirs();
   }
 
   public String getCacheFileName(LocalDate date) {
-    return cacheDir + date.toString() + ".json";
+    return this.cacheDir + date.toString() + ".json";
   }
 
   public IntradayActivity getDayActivity(LocalDate date) throws DaoException {
-    File file = new File(getCacheFileName(date));
+    final File file = new File(this.getCacheFileName(date));
     if (file.exists()) {
       try (Reader reader = new FileReader(file)) {
-        return gson.fromJson(reader, IntradayActivity.class);
-      } catch (IOException e) {
+        return this.gson.fromJson(reader, IntradayActivity.class);
+      } catch (final IOException e) {
         throw new DaoException("Could not access the cached activity.", e);
       }
     } else {
@@ -52,9 +52,9 @@ public class IntradayActivityCacheLayer
 
   public IntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
       throws DaoException {
-    List<IntradayActivity> range = new ArrayList<IntradayActivity>();
-    for (LocalDate date : new LocalDateRange(start, end)) {
-      IntradayActivity activity = this.getDayActivity(date);
+    final List<IntradayActivity> range = new ArrayList<IntradayActivity>();
+    for (final LocalDate date : new LocalDateRange(start, end)) {
+      final IntradayActivity activity = this.getDayActivity(date);
       if (activity != null) {
         range.add(this.getDayActivity(date));
       }
@@ -66,13 +66,13 @@ public class IntradayActivityCacheLayer
   public IntradayActivity getValue(LocalDate key) throws CacheLayerException {
     try {
       return this.getDayActivity(key);
-    } catch (DaoException e) {
+    } catch (final DaoException e) {
       throw CacheLayerException.createLoadException(e);
     }
   }
 
   public boolean isDateCached(LocalDate date) {
-    File file = new File(getCacheFileName(date));
+    final File file = new File(this.getCacheFileName(date));
     return file.exists();
   }
 
@@ -80,16 +80,16 @@ public class IntradayActivityCacheLayer
   public void save(IntradayActivity value) throws CacheLayerException {
     try {
       this.saveDayActivity(value);
-    } catch (DaoException e) {
+    } catch (final DaoException e) {
       throw CacheLayerException.createSaveException(e);
     }
   }
 
   public void saveDayActivity(IntradayActivity activity) throws DaoException {
     try (FileWriter fileWriter = new FileWriter(
-        getCacheFileName(activity.getDate()))) {
-      fileWriter.write(gson.toJson(activity, IntradayActivity.class));
-    } catch (IOException e) {
+        this.getCacheFileName(activity.getDate()))) {
+      fileWriter.write(this.gson.toJson(activity, IntradayActivity.class));
+    } catch (final IOException e) {
       throw new DaoException("Could not write activty out", e);
     }
   }

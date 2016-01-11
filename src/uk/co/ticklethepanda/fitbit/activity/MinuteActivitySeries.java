@@ -24,36 +24,37 @@ public class MinuteActivitySeries implements Iterable<MinuteActivity> {
   private List<MinuteActivity> dataset;
 
   public MinuteActivitySeries() {
-    dataset = new ArrayList<MinuteActivity>();
+    this.dataset = new ArrayList<MinuteActivity>();
   }
 
   public MinuteActivitySeries(List<MinuteActivity> activity) {
-    dataset = new ArrayList<MinuteActivity>(activity);
+    this.dataset = new ArrayList<MinuteActivity>(activity);
   }
 
   public MinuteActivity getByLocalTime(LocalTime plusMinutes) {
-    return dataset.stream().filter(a -> a.getTime().equals(plusMinutes))
+    return this.dataset.stream().filter(a -> a.getTime().equals(plusMinutes))
         .findFirst().get();
   }
 
   /**
-   * 
+   *
    * @return The dataset
    */
   public List<MinuteActivity> getElements() {
-    return dataset;
+    return this.dataset;
   }
 
   public Double getTotalSteps() {
-    return dataset.stream().mapToDouble(MinuteActivity::getStepCount).sum();
+    return this.dataset.stream().mapToDouble(MinuteActivity::getStepCount).sum();
   }
 
+  @Override
   public Iterator<MinuteActivity> iterator() {
-    return dataset.iterator();
+    return this.dataset.iterator();
   }
 
   /**
-   * 
+   *
    * @param dataset
    *          The dataset
    */

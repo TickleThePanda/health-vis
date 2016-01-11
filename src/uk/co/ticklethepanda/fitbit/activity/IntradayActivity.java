@@ -23,10 +23,10 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
     }
 
     public LocalDate getDate() {
-      if (date == null) {
-        date = LocalDate.parse(dateTime);
+      if (this.date == null) {
+        this.date = LocalDate.parse(this.dateTime);
       }
-      return date;
+      return this.date;
     }
 
   }
@@ -35,34 +35,31 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
 
   @SerializedName("activities-steps")
   @Expose
-  private List<DateStatistics> dayStatistics = new ArrayList<DateStatistics>();
+  private final List<DateStatistics> dayStatistics = new ArrayList<DateStatistics>();
 
   @SerializedName("activities-steps-intraday")
   @Expose
   private MinuteActivitySeries minuteActivitySeries;
-  
-  private IntradayActivity() {
-  }
-  
+
   public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
-    dayStatistics.add(new DateStatistics(date));
+    this.dayStatistics.add(new DateStatistics(date));
     this.minuteActivitySeries = intradaySet;
   }
 
   public LocalDate getDate() {
-    return dayStatistics.get(0).getDate();
+    return this.dayStatistics.get(0).getDate();
   }
 
   /**
-   * 
+   *
    * @return The activitiesLogStepsIntraday
    */
   public MinuteActivitySeries getMinuteActivitySeries() {
-    return minuteActivitySeries;
+    return this.minuteActivitySeries;
   }
 
   public boolean isFullDay() {
-    return minuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
+    return this.minuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
   }
 
   @Override

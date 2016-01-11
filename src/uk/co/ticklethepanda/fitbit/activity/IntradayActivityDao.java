@@ -11,6 +11,4 @@ public interface IntradayActivityDao {
   IntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
       throws DaoException;
 
-  void saveDayActivity(IntradayActivity activity) throws DaoException;
-
 }

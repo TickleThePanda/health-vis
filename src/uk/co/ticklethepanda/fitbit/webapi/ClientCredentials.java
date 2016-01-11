@@ -2,8 +2,8 @@ package uk.co.ticklethepanda.fitbit.webapi;
 
 public class ClientCredentials {
 
-  private String id;
-  private String secret;
+  private final String id;
+  private final String secret;
 
   public ClientCredentials(String id, String secret) {
     this.id = id;
@@ -11,12 +11,11 @@ public class ClientCredentials {
   }
 
   public String getId() {
-    return id;
+    return this.id;
   }
 
   public String getSecret() {
-    return secret;
+    return this.secret;
   }
-  
-  
+
 }

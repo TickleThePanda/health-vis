@@ -14,22 +14,25 @@ public class LocalDateRange implements Iterable<LocalDate> {
       this.end = end;
     }
 
+    @Override
     public boolean hasNext() {
-      return current != null;
+      return this.current != null;
     }
 
+    @Override
     public LocalDate next() {
-      if (current == null) {
+      if (this.current == null) {
         throw new NoSuchElementException();
       }
-      LocalDate ret = current;
-      current = current.plusDays(1);
-      if (current.compareTo(end) > 0) {
-        current = null;
+      final LocalDate ret = this.current;
+      this.current = this.current.plusDays(1);
+      if (this.current.compareTo(this.end) > 0) {
+        this.current = null;
       }
       return ret;
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -44,7 +47,8 @@ public class LocalDateRange implements Iterable<LocalDate> {
     this.end = end;
   }
 
+  @Override
   public Iterator<LocalDate> iterator() {
-    return new LocalDateRangeIterator(start, end);
+    return new LocalDateRangeIterator(this.start, this.end);
   }
 }

@@ -11,11 +11,6 @@ public class LocalVerifierServerException extends Exception {
     // TODO Auto-generated constructor stub
   }
 
-  public LocalVerifierServerException(Throwable cause) {
-    super(cause);
-    // TODO Auto-generated constructor stub
-  }
-
   public LocalVerifierServerException(String message, Throwable cause) {
     super(message, cause);
     // TODO Auto-generated constructor stub
@@ -24,6 +19,11 @@ public class LocalVerifierServerException extends Exception {
   public LocalVerifierServerException(String message, Throwable cause, boolean enableSuppression,
       boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
+    // TODO Auto-generated constructor stub
+  }
+
+  public LocalVerifierServerException(Throwable cause) {
+    super(cause);
     // TODO Auto-generated constructor stub
   }
 
