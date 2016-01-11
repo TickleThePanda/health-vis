@@ -40,7 +40,10 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
   @SerializedName("activities-steps-intraday")
   @Expose
   private MinuteActivitySeries minuteActivitySeries;
-
+  
+  private IntradayActivity() {
+  }
+  
   public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
     dayStatistics.add(new DateStatistics(date));
     this.minuteActivitySeries = intradaySet;

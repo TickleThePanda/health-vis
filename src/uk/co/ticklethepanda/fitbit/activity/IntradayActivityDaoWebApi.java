@@ -1,5 +1,6 @@
 package uk.co.ticklethepanda.fitbit.activity;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -8,15 +9,13 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.http.auth.Credentials;
 import org.apache.logging.log4j.LogManager;
-import org.scribe.builder.ServiceBuilder;
-import org.scribe.exceptions.OAuthException;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.oauth.OAuthService;
 
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -24,15 +23,14 @@ import com.google.gson.annotations.Expose;
 import uk.co.ticklethepanda.fitbit.caching.CacheLayerException;
 import uk.co.ticklethepanda.fitbit.webapi.DaoException;
 import uk.co.ticklethepanda.fitbit.webapi.FitbitApi;
-import uk.co.ticklethepanda.fitbit.webapi.UserAndClientTokens;
 import uk.co.ticklethepanda.utility.LocalDateRange;
 
 public class IntradayActivityDaoWebApi implements IntradayActivityDao {
 
   private static class RateLimitStatus {
 
-    private static long parseWaitTime(Response response) {
-      return Long.parseLong(response.getHeader(RETRY_AFTER_HEADER)) * ONE_SECOND
+    private static long parseWaitTime(HttpResponse response) {
+      return Long.parseLong(response.getHeaders().getRetryAfter()) * ONE_SECOND
           + ONE_SECOND;
     }
 
@@ -62,8 +60,6 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
 
   private static final Logger logger = LogManager.getLogger();
 
-  private static final String RETRY_AFTER_HEADER = "Retry-After";
-
   private final static String ACTIVITIES_URL = FitbitApi.BASE_URL
       + "/user/-/activities/steps/date/%/1d.json";
 
@@ -73,27 +69,15 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
   private final static DateTimeFormatter DATE_FORMATTER = new DateTimeFormatterBuilder()
       .appendPattern("yyyy-MM-dd").toFormatter();
 
-  private final static Gson GSON = new GsonBuilder()
-      .excludeFieldsWithoutExposeAnnotation().create();
-
   private static final int ONE_SECOND = 1000;
 
   private final IntradayActivityCacheLayer activityCache = new IntradayActivityCacheLayer();
 
-  private final OAuthService service;
+  private final HttpRequestFactory requestFactory;
 
-  private final UserAndClientTokens tokens;
+  public IntradayActivityDaoWebApi(HttpRequestFactory requestFactory) {
+    this.requestFactory = requestFactory;
 
-  private final FitbitApi fitbitApi;
-
-  public IntradayActivityDaoWebApi(final UserAndClientTokens tokens) {
-    this.tokens = tokens;
-    this.fitbitApi = new FitbitApi();
-
-    String clientKey = tokens.getClientToken().getToken();
-    String clientSecret = tokens.getClientToken().getSecret();
-
-    this.service = new ServiceBuilder().apiKey(clientKey).apiSecret(clientSecret).provider(fitbitApi).build();
   }
 
   @Override
@@ -101,17 +85,17 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
 
     IntradayActivity value = null;
     try {
-      logger.debug("getting values for date " + date.toString() + " from cache.");
+      logger.info("getting values for date " + date.toString() + " from cache.");
       value = activityCache.getValue(date);
     } catch (CacheLayerException e) {
       throw new DaoException("Could not day activity from cache", e);
     }
 
     if (value == null || !value.isFullDay()) {
-      logger.debug("getting values for date " + date.toString() + " from web.");
+      logger.info("getting values for date " + date.toString() + " from web.");
       value = retrieveOnlineIntradayData(date);
       try {
-        logger.debug("saving value for date " + date.toString() + " to cache.");
+        logger.info("saving value for date " + date.toString() + " to cache.");
         activityCache.save(value);
       } catch (CacheLayerException e) {
         throw new DaoException("Could not save value to cache", e);
@@ -124,6 +108,7 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
   @Override
   public IntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
       throws DaoException {
+    logger.info("getting values for dates" + start.toString() + " to " + end.toString());
     List<IntradayActivity> range = new ArrayList<IntradayActivity>();
     for (LocalDate date : new LocalDateRange(start, end)) {
       range.add(this.getDayActivity(date));
@@ -134,15 +119,22 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
   public boolean isAvailable() {
     boolean available = false;
 
-    Response response = null;
+    GenericUrl url = new GenericUrl(CLIENT_ACCESS_URL);
+
+    HttpRequest request = null;
     try {
-      response = createRemainingRequest().send();
-    } catch (OAuthException e) {
+      request = requestFactory.buildGetRequest(url);
+    } catch (IOException e) {
       available = false;
     }
 
-    RateLimitStatus status = GSON.fromJson(response.getBody(),
-        RateLimitStatus.class);
+    RateLimitStatus status = null;
+    try {
+      
+      status = GSON.fromJson(request.execute().parseAsString(), RateLimitStatus.class);
+    } catch (IOException e) {
+      available = false;
+    }
 
     if (status.hasRemainingHits()) {
       available = true;
@@ -158,28 +150,16 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
             "Cannot upload Day Activity to fitbit"));
   }
 
-  private OAuthRequest createRemainingRequest() {
-    OAuthRequest remainingRequest = new OAuthRequest(
-        Verb.GET, CLIENT_ACCESS_URL);
+  
+  /**
+   * Checks if another response is required, if it is then it waits for it to be ready.
+   * @param response
+   * @return
+   * @throws DaoException
+   */
+  private boolean isRetryRequired(HttpResponse response) throws DaoException {
 
-    service.signRequest(tokens.getUserToken(), remainingRequest);
-    remainingRequest.setConnectTimeout(10, TimeUnit.SECONDS);
-    remainingRequest.setReadTimeout(10, TimeUnit.SECONDS);
-
-    return remainingRequest;
-  }
-
-  private OAuthRequest createRequestForDate(LocalDate date) {
-    final OAuthRequest request = new OAuthRequest(Verb.GET,
-        ACTIVITIES_URL.replace("%", DATE_FORMATTER.format(date)));
-
-    service.signRequest(tokens.getUserToken(), request);
-    return request;
-  }
-
-  private boolean isSecondResponseRequired(Response response) throws DaoException {
-
-    if (response.getHeader(RETRY_AFTER_HEADER) != null) {
+    if (response.getHeaders().getRetryAfter() != null) {
       long waitTime = RateLimitStatus.parseWaitTime(response);
       try {
         Thread.sleep(waitTime);
@@ -191,13 +171,23 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
     return false;
   }
 
+  private final static Gson GSON = new GsonBuilder()
+      .excludeFieldsWithoutExposeAnnotation().create();
+
   private IntradayActivity retrieveOnlineIntradayData(LocalDate date) throws DaoException {
-    Response response = this.createRequestForDate(date).send();
+    GenericUrl url = new GenericUrl(ACTIVITIES_URL.replace("%", DATE_FORMATTER.format(date)));
 
-    if (isSecondResponseRequired(response)) {
-      response = this.createRequestForDate(date).send();
+    try {
+      HttpResponse response;
+      
+      do {
+        response = requestFactory.buildGetRequest(url).execute();
+      } while (isRetryRequired(response));
+      
+      return GSON.fromJson(response.parseAsString(), IntradayActivity.class);
+      
+    } catch (IOException e) {
+      throw new DaoException(e);
     }
-
-    return GSON.fromJson(response.getBody(), IntradayActivity.class);
   }
 }
