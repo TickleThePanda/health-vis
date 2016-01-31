@@ -77,4 +77,8 @@ public class IntradayActivityRange implements Iterable<IntradayActivity> {
     return new IntradayActivityRange(this.activities.parallelStream().filter(predicate)
         .collect(Collectors.toList()));
   }
+
+  public List<IntradayActivity> getItems() {
+    return this.activities;
+  }
 }

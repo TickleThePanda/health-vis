@@ -35,11 +35,11 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
 
   @SerializedName("activities-steps")
   @Expose
-  private final List<DateStatistics> dayStatistics = new ArrayList<DateStatistics>();
+  private final List<DateStatistics> dayStatistics = new ArrayList<>();
 
   @SerializedName("activities-steps-intraday")
   @Expose
-  private MinuteActivitySeries minuteActivitySeries;
+  private final MinuteActivitySeries minuteActivitySeries;
 
   public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
     this.dayStatistics.add(new DateStatistics(date));
@@ -56,6 +56,10 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
    */
   public MinuteActivitySeries getMinuteActivitySeries() {
     return this.minuteActivitySeries;
+  }
+  
+  public Double getTotalSteps() {
+    return this.minuteActivitySeries.getTotalSteps();
   }
 
   public boolean isFullDay() {

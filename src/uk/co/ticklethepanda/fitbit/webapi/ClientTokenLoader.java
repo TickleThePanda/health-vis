@@ -10,19 +10,18 @@ public class ClientTokenLoader {
 
   private final Properties properties;
 
-  public ClientTokenLoader() throws FileNotFoundException, IOException {
+  public ClientTokenLoader() throws IOException {
     this.properties = this.loadProperties();
   }
 
-  public ClientCredentials loadFromProperties() throws IOException {
+  public ClientCredentials loadFromProperties() {
     final String userKey = this.properties.getProperty("clientKey");
     final String userSecret = this.properties.getProperty("clientSecret");
 
-    final ClientCredentials userToken = new ClientCredentials(userKey, userSecret);
-    return userToken;
+    return new ClientCredentials(userKey, userSecret);
   }
 
-  private Properties loadProperties() throws IOException, FileNotFoundException {
+  private Properties loadProperties() throws IOException {
     final Properties prop = new Properties();
     final String propFileName = "config.properties";
 

@@ -20,7 +20,7 @@ import uk.co.ticklethepanda.fitbit.webapi.UserCredentialManager;
 import uk.co.ticklethepanda.fitbit.webapi.verifier.LocalVerifierCodeServer.LocalVerifierServerException;
 
 public class ActivityToChartsDriver {
-  private final static LocalDate firstDay = LocalDate.of(2014, 07, 15);
+  private final static LocalDate firstDay = LocalDate.of(2014, 7, 15);
 
   private final static Logger logger = LogManager.getLogger();
 
@@ -29,14 +29,14 @@ public class ActivityToChartsDriver {
     logger.info("setting up connections, etc");
 
     final ClientTokenLoader loader = new ClientTokenLoader();
-    final ClientCredentials clientCreds = loader.loadFromProperties();
+    final ClientCredentials clientCredentials = loader.loadFromProperties();
 
-    final UserCredentialManager manager = new UserCredentialManager(clientCreds);
+    final UserCredentialManager manager = new UserCredentialManager(clientCredentials);
 
-    final Credential creds = manager.getCredentialsForUser("me");
-    creds.refreshToken();
+    final Credential credentials = manager.getCredentialsForUser("me");
+    credentials.refreshToken();
 
-    final HttpRequestFactory requestFactory = manager.getHttpRequestFactory(creds);
+    final HttpRequestFactory requestFactory = manager.getHttpRequestFactory(credentials);
 
     logger.info("getting activity");
 
@@ -57,6 +57,10 @@ public class ActivityToChartsDriver {
     intradayActivityRange.getTotalSteps();
 
     logger.info("totalSteps: " + series.getTotalSteps());
+    
+//    FacetedChartData<IntradayActivity, LocalDate, Double, DayOfWeek>
+//        data = FacetedChartData.groupsOfDataWithNaturalOrdering(
+//            intradayActivityRange, act -> act.getDate(), act -> act.getTotalSteps());
   }
 
 }

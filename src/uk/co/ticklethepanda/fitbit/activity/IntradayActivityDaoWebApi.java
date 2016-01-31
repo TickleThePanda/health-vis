@@ -99,7 +99,7 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
   public IntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
       throws DaoException {
     logger.info("getting values for dates" + start.toString() + " to " + end.toString());
-    final List<IntradayActivity> range = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> range = new ArrayList<>();
     for (final LocalDate date : new LocalDateRange(start, end)) {
       range.add(this.getDayActivity(date));
     }
@@ -115,15 +115,14 @@ public class IntradayActivityDaoWebApi implements IntradayActivityDao {
     try {
       request = this.requestFactory.buildGetRequest(url);
     } catch (final IOException e) {
-      available = false;
+      return false;
     }
 
     RateLimitStatus status = null;
     try {
-
       status = GSON.fromJson(request.execute().parseAsString(), RateLimitStatus.class);
     } catch (final IOException e) {
-      available = false;
+      return false;
     }
 
     if (status.hasRemainingHits()) {

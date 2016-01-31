@@ -25,7 +25,6 @@ public class ActivityRangeTest {
     final double numberOfSteps = 8.0;
     final double numberOfMinutes = 9.0;
     final double numberOfDays = 10.0;
-    final double expectedAverageSteps = numberOfSteps;
 
     final List<MinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
@@ -33,7 +32,7 @@ public class ActivityRangeTest {
           new MinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
     }
 
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(LocalDate.now(),
           new MinuteActivitySeries(minuteActivities)));
@@ -44,7 +43,7 @@ public class ActivityRangeTest {
 
     for (int i = 0; i < numberOfMinutes; i++) {
       assertEquals("average step count was not correct",
-          expectedAverageSteps, series
+              numberOfSteps, series
               .getByLocalTime(LocalTime.MIDNIGHT.plusMinutes(i)).getStepCount(),
           0.0);
     }
@@ -63,7 +62,7 @@ public class ActivityRangeTest {
           new MinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
     }
 
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(LocalDate.now(),
           new MinuteActivitySeries(minuteActivities)));
@@ -87,14 +86,14 @@ public class ActivityRangeTest {
     final double numberOfDays = 10.0;
     final double expectedSteps = numberOfSteps * numberOfMinutes * numberOfDays;
 
-    final MinuteActivity mintueActivity = new MinuteActivity(LocalTime.MIDNIGHT,
+    final MinuteActivity minuteActivity = new MinuteActivity(LocalTime.MIDNIGHT,
         numberOfSteps);
 
     final List<MinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
-      minuteActivities.add(mintueActivity);
+      minuteActivities.add(minuteActivity);
     }
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(LocalDate.now(),
           new MinuteActivitySeries(minuteActivities)));
@@ -118,7 +117,7 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(baseDate.plusDays(i),
           new MinuteActivitySeries()));
@@ -143,7 +142,7 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(baseDate.plusDays(i),
           new MinuteActivitySeries()));
@@ -168,7 +167,7 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfMonths; i++) {
       days.add(new IntradayActivity(baseDate.plusMonths(i),
           new MinuteActivitySeries()));
@@ -193,7 +192,7 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfMonths; i++) {
       days.add(new IntradayActivity(baseDate.plusMonths(i),
           new MinuteActivitySeries()));

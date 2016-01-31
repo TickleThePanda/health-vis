@@ -52,11 +52,11 @@ public class LocalVerifierCodeServer implements Closeable {
   private static final Charset ASCII = StandardCharsets.US_ASCII;
 
   private static final int EXPECTED_PORT = 6046;
-  public static String CLIENT_ID = "229P5C";
+  private static final String CLIENT_ID = "229P5C";
 
-  public static String SCOPE = "activity";
+  private static final String SCOPE = "activity";
 
-  public static int EXPIRATION_TIME = 2592000;
+  private static final int EXPIRATION_TIME = 2592000;
 
   public static String getVerificationCodeUsingSingleUseServer() throws LocalVerifierServerException {
     String verifier = null;
@@ -69,7 +69,7 @@ public class LocalVerifierCodeServer implements Closeable {
 
   private ServerSocket server;
 
-  public LocalVerifierCodeServer() throws LocalVerifierServerException {
+  private LocalVerifierCodeServer() throws LocalVerifierServerException {
     try {
       this.server = new ServerSocket(EXPECTED_PORT);
     } catch (final IOException e) {
@@ -86,7 +86,7 @@ public class LocalVerifierCodeServer implements Closeable {
     }
   }
 
-  public String getVerifier() throws LocalVerifierServerException {
+  private String getVerifier() throws LocalVerifierServerException {
     try {
       Desktop.getDesktop().browse(new URI(FitbitApi.AUTHORIZE_URL
           + "?response_type=code"
@@ -146,14 +146,17 @@ public class LocalVerifierCodeServer implements Closeable {
       do {
         line = reader.readLine();
         if (line == null) {
-          throw new LocalVerifierServerException("The connection was terminated before the request was recieved.");
+          throw new LocalVerifierServerException("The connection was terminated before the request was received.");
         }
         if (line.startsWith("GET")) {
           final Matcher matcher = Pattern.compile("code=(?<code>[0-9a-f]*) ").matcher(line);
-          matcher.find();
-          final String code = matcher.group("code");
 
-          return code;
+          boolean found = matcher.find();
+          if(!found) {
+            throw new LocalVerifierServerException("Could not not extract the result from the request due to the code not being found.");
+          }
+
+          return matcher.group("code");
         }
       } while (!line.equals(""));
     } catch (final IOException e) {

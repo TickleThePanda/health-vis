@@ -12,6 +12,8 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import uk.co.ticklethepanda.fitbit.activity.IntradayActivity;
+import uk.co.ticklethepanda.fitbit.activity.IntradayActivityRange;
 import uk.co.ticklethepanda.fitbit.caching.CacheLayer;
 import uk.co.ticklethepanda.fitbit.caching.CacheLayerException;
 import uk.co.ticklethepanda.fitbit.webapi.DaoException;
@@ -33,11 +35,11 @@ public class IntradayActivityCacheLayer
     new File(this.cacheDir).mkdirs();
   }
 
-  public String getCacheFileName(LocalDate date) {
+  private String getCacheFileName(LocalDate date) {
     return this.cacheDir + date.toString() + ".json";
   }
 
-  public IntradayActivity getDayActivity(LocalDate date) throws DaoException {
+  private IntradayActivity getDayActivity(LocalDate date) throws DaoException {
     final File file = new File(this.getCacheFileName(date));
     if (file.exists()) {
       try (Reader reader = new FileReader(file)) {
@@ -52,7 +54,7 @@ public class IntradayActivityCacheLayer
 
   public IntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
       throws DaoException {
-    final List<IntradayActivity> range = new ArrayList<IntradayActivity>();
+    final List<IntradayActivity> range = new ArrayList<>();
     for (final LocalDate date : new LocalDateRange(start, end)) {
       final IntradayActivity activity = this.getDayActivity(date);
       if (activity != null) {
@@ -85,12 +87,12 @@ public class IntradayActivityCacheLayer
     }
   }
 
-  public void saveDayActivity(IntradayActivity activity) throws DaoException {
+  private void saveDayActivity(IntradayActivity activity) throws DaoException {
     try (FileWriter fileWriter = new FileWriter(
         this.getCacheFileName(activity.getDate()))) {
       fileWriter.write(this.gson.toJson(activity, IntradayActivity.class));
     } catch (final IOException e) {
-      throw new DaoException("Could not write activty out", e);
+      throw new DaoException("Could not write activity out", e);
     }
   }
 }

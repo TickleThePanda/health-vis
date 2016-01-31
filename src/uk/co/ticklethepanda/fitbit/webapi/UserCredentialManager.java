@@ -34,7 +34,7 @@ public class UserCredentialManager {
   private static final Logger logger = LogManager.getLogger();
 
   private static final int USAGE_LIMIT_REACHED = 429;
-  public static final FileDataStoreFactory DATA_STORE;
+  private static final FileDataStoreFactory DATA_STORE;
 
   static {
     FileDataStoreFactory factory = null;
@@ -47,14 +47,14 @@ public class UserCredentialManager {
     DATA_STORE = factory;
   }
 
-  public static final String AUTHORIZE_URL = "https://www.fitbit.com/oauth2/authorize";
-  public static final String TOKEN_ENDPOINT = "https://api.fitbit.com/oauth2/token";
+  private static final String AUTHORIZE_URL = "https://www.fitbit.com/oauth2/authorize";
+  private static final String TOKEN_ENDPOINT = "https://api.fitbit.com/oauth2/token";
   public static final String BASE_URL = "https://api.fitbit.com/1";
 
-  private static HttpTransport transport = new NetHttpTransport();
+  private static final HttpTransport transport = new NetHttpTransport();
 
-  private static JsonFactory gsonFactory = new GsonFactory();
-  private static GenericUrl tokenEndPoint = new GenericUrl(TOKEN_ENDPOINT);
+  private static final JsonFactory gsonFactory = new GsonFactory();
+  private static final GenericUrl tokenEndPoint = new GenericUrl(TOKEN_ENDPOINT);
   private final ClientCredentials credentials;
   private final BasicAuthentication basicAuthentication;
 
@@ -92,10 +92,10 @@ public class UserCredentialManager {
         .setRefreshToken(storedCred.getRefreshToken());
   }
 
-  public HttpRequestFactory getHttpRequestFactory(final Credential creds) {
+  public HttpRequestFactory getHttpRequestFactory(final Credential credential) {
     return transport.createRequestFactory(request -> {
 
-      creds.initialize(request);
+      credential.initialize(request);
 
       request.setUnsuccessfulResponseHandler((unsuccessfulRequest, response, supportsRetry) -> {
         if (response.getStatusCode() == USAGE_LIMIT_REACHED) {
@@ -103,7 +103,7 @@ public class UserCredentialManager {
           return true;
         }
         logger.info("using the credentials to handle unsuccessful response");
-        return creds.handleResponse(unsuccessfulRequest, response, supportsRetry);
+        return credential.handleResponse(unsuccessfulRequest, response, supportsRetry);
       });
     });
   }
@@ -128,7 +128,7 @@ public class UserCredentialManager {
         this.basicAuthentication,
         this.credentials.getId(),
         AUTHORIZE_URL)
-            .setScopes(Arrays.asList(new String[] { "activity" }))
+            .setScopes(Arrays.asList( "activity" ))
             .setDataStoreFactory(DATA_STORE)
             .build();
   }

@@ -24,11 +24,11 @@ public class MinuteActivitySeries implements Iterable<MinuteActivity> {
   private List<MinuteActivity> dataset;
 
   public MinuteActivitySeries() {
-    this.dataset = new ArrayList<MinuteActivity>();
+    this.dataset = new ArrayList<>();
   }
 
   public MinuteActivitySeries(List<MinuteActivity> activity) {
-    this.dataset = new ArrayList<MinuteActivity>(activity);
+    this.dataset = new ArrayList<>(activity);
   }
 
   public MinuteActivity getByLocalTime(LocalTime plusMinutes) {
