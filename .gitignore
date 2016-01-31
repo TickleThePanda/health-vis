@@ -12,8 +12,9 @@ bin/*
 config.properties
 auths/
 
-#personal settings
+#ide files
 .settings/*
+.idea/*
+intraday-visualiser.iml
 .project
-/bin/
 /target/
