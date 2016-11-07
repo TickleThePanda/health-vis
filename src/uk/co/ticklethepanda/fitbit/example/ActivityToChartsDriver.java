@@ -57,10 +57,7 @@ public class ActivityToChartsDriver {
     intradayActivityRange.getTotalSteps();
 
     logger.info("totalSteps: " + series.getTotalSteps());
-    
-//    FacetedChartData<IntradayActivity, LocalDate, Double, DayOfWeek>
-//        data = FacetedChartData.groupsOfDataWithNaturalOrdering(
-//            intradayActivityRange, act -> act.getDate(), act -> act.getTotalSteps());
+
   }
 
 }
