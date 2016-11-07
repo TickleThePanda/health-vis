@@ -15,6 +15,6 @@ auths/
 #ide files
 .settings/*
 .idea/*
-intraday-visualiser.iml
+*.iml
 .project
 /target/
