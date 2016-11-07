@@ -1,12 +1,12 @@
 package uk.co.ticklethepanda.fitbit;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 public class IntradayActivity implements Iterable<MinuteActivity> {
 

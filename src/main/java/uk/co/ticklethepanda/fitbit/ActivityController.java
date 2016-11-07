@@ -35,12 +35,14 @@ public class ActivityController {
 
     private final UserCredentialManager credentialManager;
 
-    private final static LocalDate FIRST_DAY = LocalDate.of(2014, 7, 15);
+    private final LocalDate firstDay;
 
     public ActivityController(@Autowired UserCredentialManager userCredentialManager,
-                              @Value("${baseUri}")String baseUri) {
+                              @Value("${baseUri}")String baseUri,
+                              @Value("${activity.date.start}") String firstDay) {
         this.credentialManager = userCredentialManager;
         this.baseUri = baseUri;
+        this.firstDay = LocalDate.parse(firstDay);
     }
 
     @RequestMapping(value = "/health/fitbit/status", method = RequestMethod.GET)
@@ -71,7 +73,7 @@ public class ActivityController {
     public void cacheFitbitData() throws IOException, DaoException {
         IntradayActivityDaoWebApi intradayActivityDao = new IntradayActivityDaoWebApi(getRequestFactoryForMe());
 
-        intradayActivityDao.getIntradayActivityRange(FIRST_DAY, LocalDate.now());
+        intradayActivityDao.getIntradayActivityRange(firstDay, LocalDate.now());
     }
 
     @RequestMapping(value = "/health/activity/{year}/{month}/{day}")

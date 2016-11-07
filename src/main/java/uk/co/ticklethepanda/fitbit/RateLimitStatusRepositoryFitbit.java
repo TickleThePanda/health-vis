@@ -4,7 +4,6 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.gson.Gson;
-import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 

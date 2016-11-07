@@ -1,18 +1,13 @@
 package uk.co.ticklethepanda.fitbit;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import uk.co.ticklethepanda.utility.LocalDateRange;
+
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import uk.co.ticklethepanda.utility.LocalDateRange;
 
 public class IntradayActivityCacheLayer
     implements CacheLayer<LocalDate, IntradayActivity> {

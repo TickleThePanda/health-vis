@@ -1,22 +1,13 @@
 package uk.co.ticklethepanda.fitbit.example;
 
-import java.io.IOException;
-import java.time.LocalDate;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpRequestFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import uk.co.ticklethepanda.fitbit.*;
 
-import uk.co.ticklethepanda.fitbit.IntradayActivityDao;
-import uk.co.ticklethepanda.fitbit.IntradayActivityDaoWebApi;
-import uk.co.ticklethepanda.fitbit.IntradayActivityRange;
-import uk.co.ticklethepanda.fitbit.MinuteActivitySeries;
-import uk.co.ticklethepanda.fitbit.ClientCredentials;
-import uk.co.ticklethepanda.fitbit.ClientTokenLoader;
-import uk.co.ticklethepanda.fitbit.DaoException;
-import uk.co.ticklethepanda.fitbit.UserCredentialManager;
+import java.io.IOException;
+import java.time.LocalDate;
 
 public class ActivityToChartsDriver {
   private final static LocalDate firstDay = LocalDate.of(2014, 7, 15);

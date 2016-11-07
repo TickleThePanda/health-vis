@@ -1,9 +1,9 @@
 package uk.co.ticklethepanda.fitbit;
 
-import java.time.LocalTime;
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.time.LocalTime;
 
 public class MinuteActivity {
 
