@@ -31,19 +31,19 @@ public class IntradayActivityRange implements Iterable<IntradayActivity> {
         return false;
     }
 
-    public MinuteActivitySeries getAverageDayActivity() {
+    public IntradayMinuteActivitySeries getAverageDayActivity() {
         return this.collectGroupDayActivity(
-                Collectors.averagingDouble(MinuteActivity::getStepCount));
+                Collectors.averagingDouble(IntradayMinuteActivity::getStepCount));
     }
 
-    public MinuteActivitySeries getCumulativeDayActivity() {
+    public IntradayMinuteActivitySeries getCumulativeDayActivity() {
         return this.collectGroupDayActivity(
-                Collectors.summingDouble(MinuteActivity::getStepCount));
+                Collectors.summingDouble(IntradayMinuteActivity::getStepCount));
     }
 
     public Double getTotalSteps() {
         return this.collectDayActivity(
-                Collectors.summingDouble(MinuteActivity::getStepCount));
+                Collectors.summingDouble(IntradayMinuteActivity::getStepCount));
     }
 
     public IntradayActivityRange getWhereDayOfWeek(DayOfWeek dayOfWeek) {
@@ -59,17 +59,17 @@ public class IntradayActivityRange implements Iterable<IntradayActivity> {
         return this.activities.iterator();
     }
 
-    private <E> E collectDayActivity(Collector<MinuteActivity, ?, E> collector) {
+    private <E> E collectDayActivity(Collector<IntradayMinuteActivity, ?, E> collector) {
         return this.activities.parallelStream()
                 .flatMap(
-                        l -> l.getMinuteActivitySeries().getElements().parallelStream())
+                        l -> l.getIntradayMinuteActivitySeries().getElements().parallelStream())
                 .collect(collector);
     }
 
-    private MinuteActivitySeries collectGroupDayActivity(
-            Collector<MinuteActivity, ?, Double> collector) {
-        return MinuteActivitySeries.fromMap(this.collectDayActivity(
-                Collectors.groupingBy(MinuteActivity::getTime, collector)));
+    private IntradayMinuteActivitySeries collectGroupDayActivity(
+            Collector<IntradayMinuteActivity, ?, Double> collector) {
+        return IntradayMinuteActivitySeries.fromMap(this.collectDayActivity(
+                Collectors.groupingBy(IntradayMinuteActivity::getTime, collector)));
     }
 
     private IntradayActivityRange getWherePredicate(

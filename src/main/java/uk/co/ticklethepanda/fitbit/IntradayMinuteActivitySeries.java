@@ -10,28 +10,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MinuteActivitySeries implements Iterable<MinuteActivity> {
+public class IntradayMinuteActivitySeries implements Iterable<IntradayMinuteActivity> {
 
     @SerializedName("dataset")
     @Expose
-    private List<MinuteActivity> dataset;
+    private List<IntradayMinuteActivity> dataset;
 
-    public MinuteActivitySeries() {
+    public IntradayMinuteActivitySeries() {
         this.dataset = new ArrayList<>();
     }
 
-    public MinuteActivitySeries(List<MinuteActivity> activity) {
+    public IntradayMinuteActivitySeries(List<IntradayMinuteActivity> activity) {
         this.dataset = new ArrayList<>(activity);
     }
 
-    public static MinuteActivitySeries fromMap(Map<LocalTime, Double> map) {
-        return new MinuteActivitySeries(
-                map.keySet().stream().map(a -> new MinuteActivity(a, map.get(a)))
+    public static IntradayMinuteActivitySeries fromMap(Map<LocalTime, Double> map) {
+        return new IntradayMinuteActivitySeries(
+                map.keySet().stream().map(a -> new IntradayMinuteActivity(a, map.get(a)))
                         .sorted((a, b) -> a.getTime().compareTo(b.getTime()))
                         .collect(Collectors.toList()));
     }
 
-    public MinuteActivity getByLocalTime(LocalTime plusMinutes) {
+    public IntradayMinuteActivity getByLocalTime(LocalTime plusMinutes) {
         return this.dataset.stream().filter(a -> a.getTime().equals(plusMinutes))
                 .findFirst().get();
     }
@@ -39,23 +39,23 @@ public class MinuteActivitySeries implements Iterable<MinuteActivity> {
     /**
      * @return The dataset
      */
-    public List<MinuteActivity> getElements() {
+    public List<IntradayMinuteActivity> getElements() {
         return this.dataset;
     }
 
     public Double getTotalSteps() {
-        return this.dataset.stream().mapToDouble(MinuteActivity::getStepCount).sum();
+        return this.dataset.stream().mapToDouble(IntradayMinuteActivity::getStepCount).sum();
     }
 
     @Override
-    public Iterator<MinuteActivity> iterator() {
+    public Iterator<IntradayMinuteActivity> iterator() {
         return this.dataset.iterator();
     }
 
     /**
      * @param dataset The dataset
      */
-    public void setDataset(List<MinuteActivity> dataset) {
+    public void setDataset(List<IntradayMinuteActivity> dataset) {
         this.dataset = dataset;
     }
 

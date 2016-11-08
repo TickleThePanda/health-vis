@@ -21,19 +21,19 @@ public class ActivityRangeTest {
     final double numberOfMinutes = 9.0;
     final double numberOfDays = 10.0;
 
-    final List<MinuteActivity> minuteActivities = new ArrayList<>();
+    final List<IntradayMinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
       minuteActivities.add(
-          new MinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
+          new IntradayMinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
     }
 
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(LocalDate.now(),
-          new MinuteActivitySeries(minuteActivities)));
+          new IntradayMinuteActivitySeries(minuteActivities)));
     }
 
-    final MinuteActivitySeries series = new IntradayActivityRange(days)
+    final IntradayMinuteActivitySeries series = new IntradayActivityRange(days)
         .getAverageDayActivity();
 
     for (int i = 0; i < numberOfMinutes; i++) {
@@ -51,19 +51,19 @@ public class ActivityRangeTest {
     final double numberOfDays = 10.0;
     final double expectedCumulativeSteps = numberOfSteps * numberOfDays;
 
-    final List<MinuteActivity> minuteActivities = new ArrayList<>();
+    final List<IntradayMinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
       minuteActivities.add(
-          new MinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
+          new IntradayMinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
     }
 
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(LocalDate.now(),
-          new MinuteActivitySeries(minuteActivities)));
+          new IntradayMinuteActivitySeries(minuteActivities)));
     }
 
-    final MinuteActivitySeries series = new IntradayActivityRange(days)
+    final IntradayMinuteActivitySeries series = new IntradayActivityRange(days)
         .getCumulativeDayActivity();
 
     for (int i = 0; i < numberOfMinutes; i++) {
@@ -81,17 +81,17 @@ public class ActivityRangeTest {
     final double numberOfDays = 10.0;
     final double expectedSteps = numberOfSteps * numberOfMinutes * numberOfDays;
 
-    final MinuteActivity minuteActivity = new MinuteActivity(LocalTime.MIDNIGHT,
+    final IntradayMinuteActivity intradayMinuteActivity = new IntradayMinuteActivity(LocalTime.MIDNIGHT,
         numberOfSteps);
 
-    final List<MinuteActivity> minuteActivities = new ArrayList<>();
+    final List<IntradayMinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
-      minuteActivities.add(minuteActivity);
+      minuteActivities.add(intradayMinuteActivity);
     }
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(LocalDate.now(),
-          new MinuteActivitySeries(minuteActivities)));
+          new IntradayMinuteActivitySeries(minuteActivities)));
     }
     final IntradayActivityRange range = new IntradayActivityRange(days);
 
@@ -115,7 +115,7 @@ public class ActivityRangeTest {
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(baseDate.plusDays(i),
-          new MinuteActivitySeries()));
+          new IntradayMinuteActivitySeries()));
     }
 
     final IntradayActivityRange range = new IntradayActivityRange(days)
@@ -140,7 +140,7 @@ public class ActivityRangeTest {
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
       days.add(new IntradayActivity(baseDate.plusDays(i),
-          new MinuteActivitySeries()));
+          new IntradayMinuteActivitySeries()));
     }
 
     final IntradayActivityRange range = new IntradayActivityRange(days)
@@ -165,7 +165,7 @@ public class ActivityRangeTest {
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfMonths; i++) {
       days.add(new IntradayActivity(baseDate.plusMonths(i),
-          new MinuteActivitySeries()));
+          new IntradayMinuteActivitySeries()));
     }
 
     final IntradayActivityRange range = new IntradayActivityRange(days)
@@ -190,7 +190,7 @@ public class ActivityRangeTest {
     final List<IntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfMonths; i++) {
       days.add(new IntradayActivity(baseDate.plusMonths(i),
-          new MinuteActivitySeries()));
+          new IntradayMinuteActivitySeries()));
     }
 
     final IntradayActivityRange range = new IntradayActivityRange(days)

@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.time.LocalTime;
 
-public class MinuteActivity {
+public class IntradayMinuteActivity {
 
     @SerializedName("time")
     @Expose
@@ -15,7 +15,7 @@ public class MinuteActivity {
     @Expose
     private final Double numberSteps;
 
-    public MinuteActivity(LocalTime time, Double value) {
+    public IntradayMinuteActivity(LocalTime time, Double value) {
         this.timeString = time.toString();
         this.numberSteps = value;
     }
@@ -33,7 +33,7 @@ public class MinuteActivity {
 
     @Override
     public String toString() {
-        return "MinuteActivity [timeString=" + this.timeString + ", numberSteps="
+        return "IntradayMinuteActivity [timeString=" + this.timeString + ", numberSteps="
                 + this.numberSteps + "]\n";
     }
 

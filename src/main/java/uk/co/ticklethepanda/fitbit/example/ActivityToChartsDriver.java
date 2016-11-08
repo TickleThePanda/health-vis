@@ -40,7 +40,7 @@ public class ActivityToChartsDriver {
         intradayActivityRange.getAverageDayActivity();
 
         logger.info("calculating cumulative activity");
-        final MinuteActivitySeries series =
+        final IntradayMinuteActivitySeries series =
                 intradayActivityRange.getCumulativeDayActivity();
 
         logger.info("getting total steps from series");

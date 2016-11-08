@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class IntradayActivity implements Iterable<MinuteActivity> {
+public class IntradayActivity implements Iterable<IntradayMinuteActivity> {
 
     private static final int MINUTES_IN_A_DAY = 60 * 24;
     @SerializedName("activities-steps")
@@ -16,11 +16,11 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
     private final List<DateStatistics> dayStatistics = new ArrayList<>();
     @SerializedName("activities-steps-intraday")
     @Expose
-    private final MinuteActivitySeries minuteActivitySeries;
+    private final IntradayMinuteActivitySeries intradayMinuteActivitySeries;
 
-    public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
+    public IntradayActivity(LocalDate date, IntradayMinuteActivitySeries intradaySet) {
         this.dayStatistics.add(new DateStatistics(date));
-        this.minuteActivitySeries = intradaySet;
+        this.intradayMinuteActivitySeries = intradaySet;
     }
 
     public LocalDate getDate() {
@@ -30,21 +30,21 @@ public class IntradayActivity implements Iterable<MinuteActivity> {
     /**
      * @return The activitiesLogStepsIntraday
      */
-    public MinuteActivitySeries getMinuteActivitySeries() {
-        return this.minuteActivitySeries;
+    public IntradayMinuteActivitySeries getIntradayMinuteActivitySeries() {
+        return this.intradayMinuteActivitySeries;
     }
 
     public Double getTotalSteps() {
-        return this.minuteActivitySeries.getTotalSteps();
+        return this.intradayMinuteActivitySeries.getTotalSteps();
     }
 
     public boolean isFullDay() {
-        return this.minuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
+        return this.intradayMinuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
     }
 
     @Override
-    public Iterator<MinuteActivity> iterator() {
-        return this.minuteActivitySeries.iterator();
+    public Iterator<IntradayMinuteActivity> iterator() {
+        return this.intradayMinuteActivitySeries.iterator();
     }
 
     private static class DateStatistics {
