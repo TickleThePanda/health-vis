@@ -22,85 +22,84 @@ import java.util.Arrays;
 @Component
 public class UserCredentialManager {
 
-  private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger();
 
-  private static final FileDataStoreFactory DATA_STORE;
+    private static final FileDataStoreFactory DATA_STORE;
+    private static final HttpTransport transport = new NetHttpTransport();
+    private static final JsonFactory gsonFactory = new GsonFactory();
+    private static final GenericUrl tokenEndPoint = new GenericUrl(FitbitApi.TOKEN_ENDPOINT);
 
-  static {
-    FileDataStoreFactory factory = null;
-    try {
-      factory = new FileDataStoreFactory(new File("auths"));
-    } catch (final IOException e) {
-      e.printStackTrace();
+    static {
+        FileDataStoreFactory factory = null;
+        try {
+            factory = new FileDataStoreFactory(new File("auths"));
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+
+        DATA_STORE = factory;
     }
 
-    DATA_STORE = factory;
-  }
+    private final ClientCredentials credentials;
+    private final BasicAuthentication basicAuthentication;
 
-  private static final HttpTransport transport = new NetHttpTransport();
+    private final AuthorizationCodeFlow flow;
 
-  private static final JsonFactory gsonFactory = new GsonFactory();
-  private static final GenericUrl tokenEndPoint = new GenericUrl(FitbitApi.TOKEN_ENDPOINT);
-  private final ClientCredentials credentials;
-  private final BasicAuthentication basicAuthentication;
+    private final Builder credentialBuilder;
 
-  private final AuthorizationCodeFlow flow;
+    public UserCredentialManager(@Autowired ClientCredentials credentials) throws IOException {
 
-  private final Builder credentialBuilder;
+        this.credentials = credentials;
 
-  public UserCredentialManager(@Autowired ClientCredentials credentials) throws IOException {
+        this.basicAuthentication =
+                new BasicAuthentication(credentials.getId(), credentials.getSecret());
 
-    this.credentials = credentials;
+        this.flow = new AuthorizationCodeFlow.Builder(
+                BearerToken.authorizationHeaderAccessMethod(),
+                transport,
+                gsonFactory,
+                tokenEndPoint,
+                this.basicAuthentication,
+                this.credentials.getId(),
+                FitbitApi.AUTHORIZE_URL)
+                .setScopes(Arrays.asList("activity"))
+                .setDataStoreFactory(DATA_STORE)
+                .build();
 
-    this.basicAuthentication =
-        new BasicAuthentication(credentials.getId(), credentials.getSecret());
+        this.credentialBuilder = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
+                .setClientAuthentication(this.basicAuthentication)
+                .setJsonFactory(gsonFactory)
+                .setTransport(transport)
+                .setTokenServerUrl(tokenEndPoint);
+    }
 
-    this.flow = new AuthorizationCodeFlow.Builder(
-            BearerToken.authorizationHeaderAccessMethod(),
-            transport,
-            gsonFactory,
-            tokenEndPoint,
-            this.basicAuthentication,
-            this.credentials.getId(),
-            FitbitApi.AUTHORIZE_URL)
-            .setScopes(Arrays.asList( "activity" ))
-            .setDataStoreFactory(DATA_STORE)
-            .build();
+    public Credential getCredentialsForUser(String userId) throws IOException {
+        final StoredCredential storedCred = this.flow.getCredentialDataStore().get("me");
 
-    this.credentialBuilder = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
-        .setClientAuthentication(this.basicAuthentication)
-        .setJsonFactory(gsonFactory)
-        .setTransport(transport)
-        .setTokenServerUrl(tokenEndPoint);
-  }
+        return this.credentialBuilder
+                .addRefreshListener(new DataStoreCredentialRefreshListener(userId, DATA_STORE))
+                .build()
+                .setAccessToken(storedCred.getAccessToken())
+                .setRefreshToken(storedCred.getRefreshToken());
+    }
 
-  public Credential getCredentialsForUser(String userId) throws IOException {
-    final StoredCredential storedCred = this.flow.getCredentialDataStore().get("me");
+    public HttpRequestFactory getHttpRequestFactory(final Credential credential) {
+        return transport.createRequestFactory(request -> {
+            credential.initialize(request);
+        });
+    }
 
-    return this.credentialBuilder
-        .addRefreshListener(new DataStoreCredentialRefreshListener(userId, DATA_STORE))
-        .build()
-        .setAccessToken(storedCred.getAccessToken())
-        .setRefreshToken(storedCred.getRefreshToken());
-  }
+    public void addVerifiedUser(String user, String verificationCode) throws IOException {
+        final AuthorizationCodeTokenRequest request =
+                this.flow.newTokenRequest(verificationCode);
 
-  public HttpRequestFactory getHttpRequestFactory(final Credential credential) {
-    return transport.createRequestFactory(request -> {
-      credential.initialize(request);
-    });
-  }
+        final TokenResponse response = request.execute();
 
-  public void addVerifiedUser(String user, String verificationCode) throws IOException {
-    final AuthorizationCodeTokenRequest request =
-            this.flow.newTokenRequest(verificationCode);
+        this.flow.createAndStoreCredential(response, user);
 
-    final TokenResponse response = request.execute();
+    }
 
-    this.flow.createAndStoreCredential(response, user);
-
-  }
-
-  public ClientCredentials getClientCredentials() {
-    return this.credentials;
-  }
+    public ClientCredentials getClientCredentials() {
+        return this.credentials;
+    }
 }

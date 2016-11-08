@@ -5,20 +5,20 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ClientCredentials {
-  private final String id;
-  private final String secret;
+    private final String id;
+    private final String secret;
 
-  public ClientCredentials(@Value("${clientKey}") String id, @Value("${clientSecret}")String secret) {
-    this.id = id;
-    this.secret = secret;
-  }
+    public ClientCredentials(@Value("${clientKey}") String id, @Value("${clientSecret}") String secret) {
+        this.id = id;
+        this.secret = secret;
+    }
 
-  public String getId() {
-    return this.id;
-  }
+    public String getId() {
+        return this.id;
+    }
 
-  public String getSecret() {
-    return this.secret;
-  }
+    public String getSecret() {
+        return this.secret;
+    }
 
 }

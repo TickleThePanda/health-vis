@@ -10,64 +10,61 @@ import java.util.List;
 
 public class IntradayActivity implements Iterable<MinuteActivity> {
 
-  private static class DateStatistics {
-
-    @SerializedName("dateTime")
+    private static final int MINUTES_IN_A_DAY = 60 * 24;
+    @SerializedName("activities-steps")
     @Expose
-    private String dateTime;
+    private final List<DateStatistics> dayStatistics = new ArrayList<>();
+    @SerializedName("activities-steps-intraday")
+    @Expose
+    private final MinuteActivitySeries minuteActivitySeries;
 
-    private transient LocalDate date;
-
-    public DateStatistics(LocalDate date) {
-      this.date = date;
+    public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
+        this.dayStatistics.add(new DateStatistics(date));
+        this.minuteActivitySeries = intradaySet;
     }
 
     public LocalDate getDate() {
-      if (this.date == null) {
-        this.date = LocalDate.parse(this.dateTime);
-      }
-      return this.date;
+        return this.dayStatistics.get(0).getDate();
     }
 
-  }
+    /**
+     * @return The activitiesLogStepsIntraday
+     */
+    public MinuteActivitySeries getMinuteActivitySeries() {
+        return this.minuteActivitySeries;
+    }
 
-  private static final int MINUTES_IN_A_DAY = 60 * 24;
+    public Double getTotalSteps() {
+        return this.minuteActivitySeries.getTotalSteps();
+    }
 
-  @SerializedName("activities-steps")
-  @Expose
-  private final List<DateStatistics> dayStatistics = new ArrayList<>();
+    public boolean isFullDay() {
+        return this.minuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
+    }
 
-  @SerializedName("activities-steps-intraday")
-  @Expose
-  private final MinuteActivitySeries minuteActivitySeries;
+    @Override
+    public Iterator<MinuteActivity> iterator() {
+        return this.minuteActivitySeries.iterator();
+    }
 
-  public IntradayActivity(LocalDate date, MinuteActivitySeries intradaySet) {
-    this.dayStatistics.add(new DateStatistics(date));
-    this.minuteActivitySeries = intradaySet;
-  }
+    private static class DateStatistics {
 
-  public LocalDate getDate() {
-    return this.dayStatistics.get(0).getDate();
-  }
+        @SerializedName("dateTime")
+        @Expose
+        private String dateTime;
 
-  /**
-   *
-   * @return The activitiesLogStepsIntraday
-   */
-  public MinuteActivitySeries getMinuteActivitySeries() {
-    return this.minuteActivitySeries;
-  }
-  
-  public Double getTotalSteps() {
-    return this.minuteActivitySeries.getTotalSteps();
-  }
+        private transient LocalDate date;
 
-  public boolean isFullDay() {
-    return this.minuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
-  }
+        public DateStatistics(LocalDate date) {
+            this.date = date;
+        }
 
-  @Override
-  public Iterator<MinuteActivity> iterator() {
-    return this.minuteActivitySeries.iterator();
-  }
+        public LocalDate getDate() {
+            if (this.date == null) {
+                this.date = LocalDate.parse(this.dateTime);
+            }
+            return this.date;
+        }
+
+    }
 }

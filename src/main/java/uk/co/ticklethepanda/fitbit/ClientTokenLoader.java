@@ -7,28 +7,28 @@ import java.util.Properties;
 
 public class ClientTokenLoader {
 
-  private final Properties properties;
+    private final Properties properties;
 
-  public ClientTokenLoader() throws IOException {
-    this.properties = this.loadProperties();
-  }
+    public ClientTokenLoader() throws IOException {
+        this.properties = this.loadProperties();
+    }
 
-  public ClientCredentials loadFromProperties() {
-    final String userKey = this.properties.getProperty("clientKey");
-    final String userSecret = this.properties.getProperty("clientSecret");
+    public ClientCredentials loadFromProperties() {
+        final String userKey = this.properties.getProperty("clientKey");
+        final String userSecret = this.properties.getProperty("clientSecret");
 
-    return new ClientCredentials(userKey, userSecret);
-  }
+        return new ClientCredentials(userKey, userSecret);
+    }
 
-  private Properties loadProperties() throws IOException {
-    final Properties prop = new Properties();
-    final String propFileName = "application.properties";
+    private Properties loadProperties() throws IOException {
+        final Properties prop = new Properties();
+        final String propFileName = "application.properties";
 
-    final InputStream inputStream = new FileInputStream(propFileName);
+        final InputStream inputStream = new FileInputStream(propFileName);
 
-    prop.load(inputStream);
+        prop.load(inputStream);
 
-    return prop;
-  }
+        return prop;
+    }
 
 }

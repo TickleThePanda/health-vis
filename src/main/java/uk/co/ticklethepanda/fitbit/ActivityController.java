@@ -23,7 +23,7 @@ import java.time.LocalDate;
 @EnableAutoConfiguration
 @EnableAsync
 @EnableScheduling
-@ComponentScan(value={"uk.co.ticklethepanda.fitbit"})
+@ComponentScan("uk.co.ticklethepanda.fitbit")
 public class ActivityController {
 
     private static final String SCOPE = "activity";
@@ -38,11 +38,15 @@ public class ActivityController {
     private final LocalDate firstDay;
 
     public ActivityController(@Autowired UserCredentialManager userCredentialManager,
-                              @Value("${baseUri}")String baseUri,
+                              @Value("${baseUri}") String baseUri,
                               @Value("${activity.date.start}") String firstDay) {
         this.credentialManager = userCredentialManager;
         this.baseUri = baseUri;
         this.firstDay = LocalDate.parse(firstDay);
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(ActivityController.class);
     }
 
     @RequestMapping(value = "/health/fitbit/status", method = RequestMethod.GET)
@@ -69,7 +73,7 @@ public class ActivityController {
         return "redirect:" + redirect;
     }
 
-    @Scheduled(fixedRate=1000*60*60, initialDelay = 0)
+    @Scheduled(fixedRate = 1000 * 60 * 60, initialDelay = 0)
     public void cacheFitbitData() throws IOException, DaoException {
         IntradayActivityDaoWebApi intradayActivityDao = new IntradayActivityDaoWebApi(getRequestFactoryForMe());
 
@@ -79,8 +83,8 @@ public class ActivityController {
     @RequestMapping(value = "/health/activity/{year}/{month}/{day}")
     @ResponseBody
     public IntradayActivity getFitbitDataForDay(@PathVariable("year") int year,
-                                    @PathVariable("month") int month,
-                                    @PathVariable("day") int day) throws IOException, DaoException {
+                                                @PathVariable("month") int month,
+                                                @PathVariable("day") int day) throws IOException, DaoException {
         IntradayActivityDaoWebApi intradayActivityDao = new IntradayActivityDaoWebApi(getRequestFactoryForMe());
 
         return intradayActivityDao.getDayActivity(LocalDate.of(year, month, day));
@@ -88,9 +92,5 @@ public class ActivityController {
 
     private HttpRequestFactory getRequestFactoryForMe() throws IOException {
         return credentialManager.getHttpRequestFactory(credentialManager.getCredentialsForUser("me"));
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(ActivityController.class);
     }
 }
