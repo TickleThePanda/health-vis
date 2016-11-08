@@ -12,9 +12,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import uk.co.ticklethepanda.activity.dto.DayActivity;
+import uk.co.ticklethepanda.activity.dto.transformers.DayActivityTransformer;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.concurrent.Callable;
 
 /**
  * Created by panda on 07/11/2016.
@@ -73,6 +76,11 @@ public class ActivityController {
         return "redirect:" + redirect;
     }
 
+    @RequestMapping(value = "/health/fitbit/cache")
+    public Callable<Void> triggerCacheCheck() throws IOException, DaoException {
+        return () -> {cacheFitbitData(); return null;};
+    }
+
     @Scheduled(fixedRate = 1000 * 60 * 60, initialDelay = 0)
     public void cacheFitbitData() throws IOException, DaoException {
         IntradayActivityDaoWebApi intradayActivityDao = new IntradayActivityDaoWebApi(getRequestFactoryForMe());
@@ -82,12 +90,14 @@ public class ActivityController {
 
     @RequestMapping(value = "/health/activity/{year}/{month}/{day}")
     @ResponseBody
-    public IntradayActivity getFitbitDataForDay(@PathVariable("year") int year,
-                                                @PathVariable("month") int month,
-                                                @PathVariable("day") int day) throws IOException, DaoException {
+    public DayActivity getFitbitDataForDay(@PathVariable("year") int year,
+                                           @PathVariable("month") int month,
+                                           @PathVariable("day") int day) throws IOException, DaoException {
         IntradayActivityDaoWebApi intradayActivityDao = new IntradayActivityDaoWebApi(getRequestFactoryForMe());
 
-        return intradayActivityDao.getDayActivity(LocalDate.of(year, month, day));
+        return new DayActivityTransformer().transform(
+                intradayActivityDao.getDayActivity(
+                        LocalDate.of(year, month, day)));
     }
 
     private HttpRequestFactory getRequestFactoryForMe() throws IOException {
