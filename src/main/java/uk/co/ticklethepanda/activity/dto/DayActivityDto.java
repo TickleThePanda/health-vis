@@ -1,29 +1,26 @@
 package uk.co.ticklethepanda.activity.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.Min;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.SortedSet;
 
 /**
  * @author Lovingly hand crafted by the ISIS Business Applications Team
  */
-public class DayActivity {
+public class DayActivityDto {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     public final LocalDate date;
-    public final SortedSet<MinuteActivity> minuteActivity;
+    public final SortedSet<MinuteActivityDto> minuteActivity;
 
-    public DayActivity(LocalDate date, SortedSet<MinuteActivity> minuteActivity) {
+    public DayActivityDto(LocalDate date, SortedSet<MinuteActivityDto> minuteActivity) {
         this.date = date;
         this.minuteActivity = Collections.unmodifiableSortedSet(minuteActivity);
     }
 
-    public DayActivity(SortedSet<MinuteActivity> minuteActivity) {
+    public DayActivityDto(SortedSet<MinuteActivityDto> minuteActivity) {
         this.date = null;
         this.minuteActivity = minuteActivity;
     }

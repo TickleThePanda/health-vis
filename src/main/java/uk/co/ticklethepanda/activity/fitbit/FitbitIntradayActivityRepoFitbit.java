@@ -33,49 +33,23 @@ public class FitbitIntradayActivityRepoFitbit implements FitbitIntradayActivityR
     private final static Gson GSON = new GsonBuilder()
             .excludeFieldsWithoutExposeAnnotation().create();
 
-    private final FitbitIntradayActivityCacheLayer activityCache = new FitbitIntradayActivityCacheLayer();
-
     private final HttpRequestFactory requestFactory;
 
     public FitbitIntradayActivityRepoFitbit(HttpRequestFactory requestFactory) {
         this.requestFactory = requestFactory;
-
     }
 
     @Override
     public FitbitIntradayActivity getDayActivity(LocalDate date) throws DaoException {
+        final GenericUrl url = new GenericUrl(ACTIVITIES_URL.replace("%", DATE_FORMATTER.format(date)));
 
-        FitbitIntradayActivity value = null;
         try {
-            logger.info("getting values for date " + date.toString() + " from cache.");
-            value = this.activityCache.getValue(date);
-        } catch (final CacheLayerException e) {
-            throw new DaoException("Could not day activity from cache", e);
-        }
+            final HttpResponse response = this.requestFactory.buildGetRequest(url).execute();
+            return GSON.fromJson(response.parseAsString(), FitbitIntradayActivity.class);
 
-        if (value == null || !value.isFullDay()) {
-            logger.info("getting values for date " + date.toString() + " from web.");
-            value = this.retrieveOnlineIntradayData(date);
-            try {
-                logger.info("saving value for date " + date.toString() + " to cache.");
-                this.activityCache.save(value);
-            } catch (final CacheLayerException e) {
-                throw new DaoException("Could not save value to cache", e);
-            }
+        } catch (final IOException e) {
+            throw new DaoException(e);
         }
-        return value;
-
-    }
-
-    @Override
-    public FitbitIntradayActivityRange getIntradayActivityRange(LocalDate start, LocalDate end)
-            throws DaoException {
-        logger.info("getting values for dates" + start.toString() + " to " + end.toString());
-        final List<FitbitIntradayActivity> range = new ArrayList<>();
-        for (final LocalDate date : new LocalDateRange(start, end)) {
-            range.add(this.getDayActivity(date));
-        }
-        return new FitbitIntradayActivityRange(range);
     }
 
     public boolean isAvailable() {
@@ -104,21 +78,4 @@ public class FitbitIntradayActivityRepoFitbit implements FitbitIntradayActivityR
         return available;
     }
 
-    public void saveDayActivity(FitbitIntradayActivity activity) throws DaoException {
-        throw new DaoException("Cannot upload DayActivity to fitbit",
-                new UnsupportedOperationException(
-                        "Cannot upload Day Activity to fitbit"));
-    }
-
-    private FitbitIntradayActivity retrieveOnlineIntradayData(LocalDate date) throws DaoException {
-        final GenericUrl url = new GenericUrl(ACTIVITIES_URL.replace("%", DATE_FORMATTER.format(date)));
-
-        try {
-            final HttpResponse response = this.requestFactory.buildGetRequest(url).execute();
-            return GSON.fromJson(response.parseAsString(), FitbitIntradayActivity.class);
-
-        } catch (final IOException e) {
-            throw new DaoException(e);
-        }
-    }
 }

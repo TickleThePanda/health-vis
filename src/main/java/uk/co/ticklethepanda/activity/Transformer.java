@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.activity.dto.transformers;
+package uk.co.ticklethepanda.activity;
 
 /**
  * @author Lovingly hand crafted by the ISIS Business Applications Team

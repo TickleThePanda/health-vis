@@ -5,11 +5,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import uk.co.ticklethepanda.activity.dto.DayActivity;
-import uk.co.ticklethepanda.activity.dto.transformers.DayActivityTransformer;
+import uk.co.ticklethepanda.activity.dto.DayActivityDto;
+import uk.co.ticklethepanda.activity.dto.transformers.DayActivityEntityToDto;
 import uk.co.ticklethepanda.activity.fitbit.DaoException;
 import uk.co.ticklethepanda.activity.fitbit.FitbitIntradayActivityRepoFitbit;
 import uk.co.ticklethepanda.activity.fitbit.UserCredentialManager;
+import uk.co.ticklethepanda.activity.local.ActivityService;
+import uk.co.ticklethepanda.activity.local.DayActivity;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -21,23 +23,20 @@ import java.time.LocalDate;
 @RequestMapping(value = "/health/activity")
 public class ActivityController {
 
-    private final UserCredentialManager credentialManager;
+    private final ActivityService activityService;
 
-    public ActivityController(@Autowired UserCredentialManager credentialManager) {
-        this.credentialManager = credentialManager;
+    public ActivityController(@Autowired ActivityService activityService) {
+        this.activityService = activityService;
     }
 
     @RequestMapping(value = "/{year}/{month}/{day}")
     @ResponseBody
-    public DayActivity getFitbitDataForDay(@PathVariable("year") int year,
-                                           @PathVariable("month") int month,
-                                           @PathVariable("day") int day) throws IOException, DaoException {
+    public DayActivityDto getFitbitDataForDay(@PathVariable("year") int year,
+                                              @PathVariable("month") int month,
+                                              @PathVariable("day") int day) throws IOException, DaoException {
 
-        FitbitIntradayActivityRepoFitbit intradayActivityDao = new FitbitIntradayActivityRepoFitbit(credentialManager
-                .getRequestFactoryForMe());
+        DayActivity activity = activityService.getActivityForDate(LocalDate.of(year, month, day));
 
-        return new DayActivityTransformer().transform(
-                intradayActivityDao.getDayActivity(
-                        LocalDate.of(year, month, day)));
+        return new DayActivityEntityToDto().transform(activity);
     }
 }

@@ -8,13 +8,13 @@ import java.time.LocalTime;
 /**
  * @author Lovingly hand crafted by the ISIS Business Applications Team
  */
-public class MinuteActivity {
+public class MinuteActivityDto {
 
     @JsonFormat(pattern = "HH:mm:ss")
     public final LocalTime time;
     public final int steps;
 
-    public MinuteActivity(LocalTime time, int steps) {
+    public MinuteActivityDto(LocalTime time, int steps) {
         this.time = time;
         this.steps = steps;
     }

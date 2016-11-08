@@ -1,15 +1,23 @@
 package uk.co.ticklethepanda.activity;
 
 import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import uk.co.ticklethepanda.activity.fitbit.*;
+import uk.co.ticklethepanda.activity.local.ActivityService;
+import uk.co.ticklethepanda.activity.local.transformers.DayActivityFitbitToEntity;
+import uk.co.ticklethepanda.activity.utility.LocalDateRange;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -18,6 +26,8 @@ import java.util.concurrent.Callable;
 @Controller
 @RequestMapping(value = "/health/fitbit")
 public class CacheController {
+
+    private static final Logger logger = LogManager.getLogger();
 
     private static final String SCOPE = "activity";
 
@@ -30,12 +40,16 @@ public class CacheController {
 
     private final LocalDate firstDay;
 
+    private ActivityService activityService;
+
     public CacheController(@Autowired UserCredentialManager userCredentialManager,
                            @Value("${baseUri}") String baseUri,
-                           @Value("${activity.date.start}") String firstDay) {
+                           @Value("${activity.date.start}") String firstDay,
+                           @Autowired ActivityService activityService) {
         this.credentialManager = userCredentialManager;
         this.baseUri = baseUri;
         this.firstDay = LocalDate.parse(firstDay);
+        this.activityService = activityService;
     }
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
@@ -69,9 +83,23 @@ public class CacheController {
 
     @Scheduled(fixedRate = 1000 * 60 * 60, initialDelay = 0)
     public void cacheFitbitData() throws IOException, DaoException {
-        FitbitIntradayActivityRepoFitbit intradayActivityDao = new FitbitIntradayActivityRepoFitbit(credentialManager.getRequestFactoryForMe());
 
-        intradayActivityDao.getIntradayActivityRange(firstDay, LocalDate.now());
+        FitbitIntradayActivityRepo intradayActivityDao = new FitbitIntradayActivityRepoFitbit(
+                credentialManager.getRequestFactoryForMe());
+
+        DayActivityFitbitToEntity transformer = new DayActivityFitbitToEntity();
+
+
+        for(LocalDate date : new LocalDateRange(firstDay, LocalDate.now())) {
+            if(!activityService.hasCompleteEntry(date)) {
+                logger.info("getting activity from fitbit for " + date.toString());
+                FitbitIntradayActivity activity = intradayActivityDao.getDayActivity(date);
+                logger.info("replacing activity for " + date.toString());
+                activityService.replaceActivityWith(transformer.transform(activity));
+            } else {
+                logger.info("skipping activity fitbit for " + date.toString() + " - already up to date");
+            }
+        };
     }
 
 }

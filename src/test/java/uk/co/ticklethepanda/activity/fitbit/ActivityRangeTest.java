@@ -149,7 +149,7 @@ public class ActivityRangeTest {
     for (int i = 0; i < numberOfDays; i++) {
       final LocalDate date = baseDate.plusDays(i);
       if (!date.getDayOfWeek().equals(dow)) {
-        assertFalse("unexpected DayActivity was contained in ActivityRange",
+        assertFalse("unexpected DayActivityDto was contained in ActivityRange",
             range.contains(date));
       }
     }
@@ -174,7 +174,7 @@ public class ActivityRangeTest {
     for (int i = 0; i < numberOfMonths; i++) {
       final LocalDate date = baseDate.plusDays(i);
       if (date.getMonth().equals(selectedMonth)) {
-        assertTrue("expected DayActivity was not contained in ActivityRange",
+        assertTrue("expected DayActivityDto was not contained in ActivityRange",
             range.contains(date));
       }
     }
@@ -199,7 +199,7 @@ public class ActivityRangeTest {
     for (int i = 0; i < numberOfMonths; i++) {
       final LocalDate date = baseDate.plusDays(i);
       if (!date.getMonth().equals(selectedMonth)) {
-        assertFalse("unexpected DayActivity was contained in ActivityRange",
+        assertFalse("unexpected DayActivityDto was contained in ActivityRange",
             range.contains(date));
       }
     }
