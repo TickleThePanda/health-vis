@@ -2,18 +2,17 @@ package uk.co.ticklethepanda.activity.dto.transformers;
 
 import uk.co.ticklethepanda.activity.dto.DayActivity;
 import uk.co.ticklethepanda.activity.dto.MinuteActivity;
-import uk.co.ticklethepanda.fitbit.IntradayActivity;
-import uk.co.ticklethepanda.fitbit.IntradayMinuteActivity;
+import uk.co.ticklethepanda.activity.fitbit.FitbitIntradayActivity;
 
 import java.util.TreeSet;
 
 /**
  * @author Lovingly hand crafted by the ISIS Business Applications Team
  */
-public class DayActivityTransformer implements Transformer<IntradayActivity, DayActivity> {
+public class DayActivityTransformer implements Transformer<FitbitIntradayActivity, DayActivity> {
 
     @Override
-    public DayActivity transform(IntradayActivity input) {
+    public DayActivity transform(FitbitIntradayActivity input) {
         TreeSet<MinuteActivity> activities = new TreeSet<>((a,b) -> a.time.compareTo(b.time));
 
         input.getIntradayMinuteActivitySeries().getElements().forEach(ima -> {

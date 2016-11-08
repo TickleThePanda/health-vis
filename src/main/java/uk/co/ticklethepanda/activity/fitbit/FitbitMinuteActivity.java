@@ -1,11 +1,11 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.time.LocalTime;
 
-public class IntradayMinuteActivity {
+public class FitbitMinuteActivity {
 
     @SerializedName("time")
     @Expose
@@ -15,7 +15,7 @@ public class IntradayMinuteActivity {
     @Expose
     private final Double numberSteps;
 
-    public IntradayMinuteActivity(LocalTime time, Double value) {
+    public FitbitMinuteActivity(LocalTime time, Double value) {
         this.timeString = time.toString();
         this.numberSteps = value;
     }
@@ -33,7 +33,7 @@ public class IntradayMinuteActivity {
 
     @Override
     public String toString() {
-        return "IntradayMinuteActivity [timeString=" + this.timeString + ", numberSteps="
+        return "FitbitMinuteActivity [timeString=" + this.timeString + ", numberSteps="
                 + this.numberSteps + "]\n";
     }
 

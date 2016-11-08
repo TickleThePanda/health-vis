@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import com.google.api.client.auth.oauth2.*;
 import com.google.api.client.auth.oauth2.Credential.Builder;
@@ -101,5 +101,9 @@ public class UserCredentialManager {
 
     public ClientCredentials getClientCredentials() {
         return this.credentials;
+    }
+
+    public HttpRequestFactory getRequestFactoryForMe() throws IOException {
+        return getHttpRequestFactory(getCredentialsForUser("me"));
     }
 }

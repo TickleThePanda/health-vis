@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import java.io.FileInputStream;
 import java.io.IOException;

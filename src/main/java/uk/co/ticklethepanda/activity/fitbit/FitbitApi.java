@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 public class FitbitApi {
     public static final String AUTHORIZE_URL = "https://www.fitbit.com/oauth2/authorize";

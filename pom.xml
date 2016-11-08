@@ -8,7 +8,7 @@
 		<version>1.4.1.RELEASE</version>
 	</parent>
 
-	<groupId>uk.co.ticklethepanda.fitbit</groupId>
+	<groupId>uk.co.ticklethepanda.activity.fitbit</groupId>
 	<artifactId>intraday-visualiser</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 

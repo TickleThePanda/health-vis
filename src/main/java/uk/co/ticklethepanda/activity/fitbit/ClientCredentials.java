@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

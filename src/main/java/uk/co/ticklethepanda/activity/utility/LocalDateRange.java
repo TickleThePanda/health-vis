@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.utility;
+package uk.co.ticklethepanda.activity.utility;
 
 import java.time.LocalDate;
 import java.util.Iterator;

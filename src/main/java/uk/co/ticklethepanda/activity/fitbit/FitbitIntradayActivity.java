@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class IntradayActivity implements Iterable<IntradayMinuteActivity> {
+public class FitbitIntradayActivity implements Iterable<FitbitMinuteActivity> {
 
     private static final int MINUTES_IN_A_DAY = 60 * 24;
     @SerializedName("activities-steps")
@@ -16,9 +16,9 @@ public class IntradayActivity implements Iterable<IntradayMinuteActivity> {
     private final List<DateStatistics> dayStatistics = new ArrayList<>();
     @SerializedName("activities-steps-intraday")
     @Expose
-    private final IntradayMinuteActivitySeries intradayMinuteActivitySeries;
+    private final FitbitMinuteActivitySeries intradayMinuteActivitySeries;
 
-    public IntradayActivity(LocalDate date, IntradayMinuteActivitySeries intradaySet) {
+    public FitbitIntradayActivity(LocalDate date, FitbitMinuteActivitySeries intradaySet) {
         this.dayStatistics.add(new DateStatistics(date));
         this.intradayMinuteActivitySeries = intradaySet;
     }
@@ -30,7 +30,7 @@ public class IntradayActivity implements Iterable<IntradayMinuteActivity> {
     /**
      * @return The activitiesLogStepsIntraday
      */
-    public IntradayMinuteActivitySeries getIntradayMinuteActivitySeries() {
+    public FitbitMinuteActivitySeries getIntradayMinuteActivitySeries() {
         return this.intradayMinuteActivitySeries;
     }
 
@@ -43,7 +43,7 @@ public class IntradayActivity implements Iterable<IntradayMinuteActivity> {
     }
 
     @Override
-    public Iterator<IntradayMinuteActivity> iterator() {
+    public Iterator<FitbitMinuteActivity> iterator() {
         return this.intradayMinuteActivitySeries.iterator();
     }
 

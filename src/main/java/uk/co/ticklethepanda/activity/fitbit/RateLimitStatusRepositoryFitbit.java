@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;

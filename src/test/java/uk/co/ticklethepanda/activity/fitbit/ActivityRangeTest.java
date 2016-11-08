@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.fitbit;
+package uk.co.ticklethepanda.activity.fitbit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,19 +21,19 @@ public class ActivityRangeTest {
     final double numberOfMinutes = 9.0;
     final double numberOfDays = 10.0;
 
-    final List<IntradayMinuteActivity> minuteActivities = new ArrayList<>();
+    final List<FitbitMinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
       minuteActivities.add(
-          new IntradayMinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
+          new FitbitMinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
     }
 
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
-      days.add(new IntradayActivity(LocalDate.now(),
-          new IntradayMinuteActivitySeries(minuteActivities)));
+      days.add(new FitbitIntradayActivity(LocalDate.now(),
+          new FitbitMinuteActivitySeries(minuteActivities)));
     }
 
-    final IntradayMinuteActivitySeries series = new IntradayActivityRange(days)
+    final FitbitMinuteActivitySeries series = new FitbitIntradayActivityRange(days)
         .getAverageDayActivity();
 
     for (int i = 0; i < numberOfMinutes; i++) {
@@ -51,19 +51,19 @@ public class ActivityRangeTest {
     final double numberOfDays = 10.0;
     final double expectedCumulativeSteps = numberOfSteps * numberOfDays;
 
-    final List<IntradayMinuteActivity> minuteActivities = new ArrayList<>();
+    final List<FitbitMinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
       minuteActivities.add(
-          new IntradayMinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
+          new FitbitMinuteActivity(LocalTime.MIDNIGHT.plusMinutes(i), numberOfSteps));
     }
 
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
-      days.add(new IntradayActivity(LocalDate.now(),
-          new IntradayMinuteActivitySeries(minuteActivities)));
+      days.add(new FitbitIntradayActivity(LocalDate.now(),
+          new FitbitMinuteActivitySeries(minuteActivities)));
     }
 
-    final IntradayMinuteActivitySeries series = new IntradayActivityRange(days)
+    final FitbitMinuteActivitySeries series = new FitbitIntradayActivityRange(days)
         .getCumulativeDayActivity();
 
     for (int i = 0; i < numberOfMinutes; i++) {
@@ -81,19 +81,19 @@ public class ActivityRangeTest {
     final double numberOfDays = 10.0;
     final double expectedSteps = numberOfSteps * numberOfMinutes * numberOfDays;
 
-    final IntradayMinuteActivity intradayMinuteActivity = new IntradayMinuteActivity(LocalTime.MIDNIGHT,
+    final FitbitMinuteActivity fitbitMinuteActivity = new FitbitMinuteActivity(LocalTime.MIDNIGHT,
         numberOfSteps);
 
-    final List<IntradayMinuteActivity> minuteActivities = new ArrayList<>();
+    final List<FitbitMinuteActivity> minuteActivities = new ArrayList<>();
     for (int i = 0; i < numberOfMinutes; i++) {
-      minuteActivities.add(intradayMinuteActivity);
+      minuteActivities.add(fitbitMinuteActivity);
     }
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
-      days.add(new IntradayActivity(LocalDate.now(),
-          new IntradayMinuteActivitySeries(minuteActivities)));
+      days.add(new FitbitIntradayActivity(LocalDate.now(),
+          new FitbitMinuteActivitySeries(minuteActivities)));
     }
-    final IntradayActivityRange range = new IntradayActivityRange(days);
+    final FitbitIntradayActivityRange range = new FitbitIntradayActivityRange(days);
 
     assertEquals("expected total of steps was not " + expectedSteps,
         expectedSteps, range.getTotalSteps(), 0.0);
@@ -101,7 +101,7 @@ public class ActivityRangeTest {
 
   @Test
   public void getTotalSteps_blankActivityRange_noSteps() {
-    final IntradayActivityRange range = new IntradayActivityRange();
+    final FitbitIntradayActivityRange range = new FitbitIntradayActivityRange();
     assertEquals("Expected no steps", range.getTotalSteps(), 0.0, 0.0);
   }
 
@@ -112,13 +112,13 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
-      days.add(new IntradayActivity(baseDate.plusDays(i),
-          new IntradayMinuteActivitySeries()));
+      days.add(new FitbitIntradayActivity(baseDate.plusDays(i),
+          new FitbitMinuteActivitySeries()));
     }
 
-    final IntradayActivityRange range = new IntradayActivityRange(days)
+    final FitbitIntradayActivityRange range = new FitbitIntradayActivityRange(days)
         .getWhereDayOfWeek(dow);
 
     for (int i = 0; i < numberOfDays; i++) {
@@ -137,13 +137,13 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfDays; i++) {
-      days.add(new IntradayActivity(baseDate.plusDays(i),
-          new IntradayMinuteActivitySeries()));
+      days.add(new FitbitIntradayActivity(baseDate.plusDays(i),
+          new FitbitMinuteActivitySeries()));
     }
 
-    final IntradayActivityRange range = new IntradayActivityRange(days)
+    final FitbitIntradayActivityRange range = new FitbitIntradayActivityRange(days)
         .getWhereDayOfWeek(dow);
 
     for (int i = 0; i < numberOfDays; i++) {
@@ -162,13 +162,13 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfMonths; i++) {
-      days.add(new IntradayActivity(baseDate.plusMonths(i),
-          new IntradayMinuteActivitySeries()));
+      days.add(new FitbitIntradayActivity(baseDate.plusMonths(i),
+          new FitbitMinuteActivitySeries()));
     }
 
-    final IntradayActivityRange range = new IntradayActivityRange(days)
+    final FitbitIntradayActivityRange range = new FitbitIntradayActivityRange(days)
         .getWhereMonth(selectedMonth);
 
     for (int i = 0; i < numberOfMonths; i++) {
@@ -187,13 +187,13 @@ public class ActivityRangeTest {
 
     final LocalDate baseDate = LocalDate.now();
 
-    final List<IntradayActivity> days = new ArrayList<>();
+    final List<FitbitIntradayActivity> days = new ArrayList<>();
     for (int i = 0; i < numberOfMonths; i++) {
-      days.add(new IntradayActivity(baseDate.plusMonths(i),
-          new IntradayMinuteActivitySeries()));
+      days.add(new FitbitIntradayActivity(baseDate.plusMonths(i),
+          new FitbitMinuteActivitySeries()));
     }
 
-    final IntradayActivityRange range = new IntradayActivityRange(days)
+    final FitbitIntradayActivityRange range = new FitbitIntradayActivityRange(days)
         .getWhereMonth(selectedMonth);
 
     for (int i = 0; i < numberOfMonths; i++) {
