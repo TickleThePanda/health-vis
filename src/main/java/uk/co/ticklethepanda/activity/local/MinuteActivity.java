@@ -3,9 +3,7 @@ package uk.co.ticklethepanda.activity.local;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
 import java.time.LocalTime;
-import java.util.Set;
 
 /**
  * Created by panda on 08/11/2016.
@@ -32,6 +30,11 @@ public class MinuteActivity {
     private DayActivity dayActivity;
 
     public MinuteActivity() {
+    }
+
+    public MinuteActivity(LocalTime time, int steps) {
+        this.time = time;
+        this.steps = steps;
     }
 
     public DayActivity getDayActivity() {

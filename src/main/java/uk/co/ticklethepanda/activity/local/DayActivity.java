@@ -14,6 +14,10 @@ import java.util.Set;
         @NamedQuery(
                 name = "findDayActivityByDate",
                 query = "from DayActivity d where d.date = :date"
+        ),
+        @NamedQuery(
+                name = "getAllDayActivity",
+                query = "from DayActivity d"
         )
 })
 
@@ -35,6 +39,12 @@ public class DayActivity {
 
     public DayActivity() {
     }
+
+    public DayActivity(LocalDate date, Set<MinuteActivity> minuteActivity) {
+        this.date = date;
+        this.minuteActivityEntities = minuteActivity;
+    }
+
 
     public Set<MinuteActivity> getMinuteActivityEntities() {
         return minuteActivityEntities;

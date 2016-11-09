@@ -1,13 +1,11 @@
 package uk.co.ticklethepanda.activity.fitbit;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.Month;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collector;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FitbitIntradayActivityRange implements Iterable<FitbitIntradayActivity> {
@@ -32,50 +30,41 @@ public class FitbitIntradayActivityRange implements Iterable<FitbitIntradayActiv
     }
 
     public FitbitMinuteActivitySeries getAverageDayActivity() {
-        return this.collectGroupDayActivity(
-                Collectors.averagingDouble(FitbitMinuteActivity::getStepCount));
+        return new FitbitMinuteActivitySeries(
+                this.activities.parallelStream()
+                        .flatMap(l -> l.getIntradayMinuteActivitySeries().getElements().parallelStream())
+                        .collect(Collectors.groupingBy(FitbitMinuteActivity::getTime,
+                                Collectors.averagingDouble(FitbitMinuteActivity::getStepCount)))
+                        .keySet().stream().map(
+                                a -> new FitbitMinuteActivity(a, this.activities.parallelStream().flatMap(l1 -> l1.getIntradayMinuteActivitySeries().getElements().parallelStream())
+                                                .collect(Collectors.groupingBy(FitbitMinuteActivity::getTime, Collectors.averagingDouble(FitbitMinuteActivity::getStepCount))).get(a)))
+                        .sorted((a, b) -> a.getTime().compareTo(b.getTime()))
+                        .collect(Collectors.toList()));
     }
 
     public FitbitMinuteActivitySeries getCumulativeDayActivity() {
-        return this.collectGroupDayActivity(
-                Collectors.summingDouble(FitbitMinuteActivity::getStepCount));
+        return new FitbitMinuteActivitySeries(
+                this.activities.parallelStream()
+                        .flatMap(
+                                l -> l.getIntradayMinuteActivitySeries().getElements().parallelStream())
+                        .collect(Collectors.groupingBy(FitbitMinuteActivity::getTime, Collectors.summingDouble(FitbitMinuteActivity::getStepCount))).keySet().stream().map(a -> new FitbitMinuteActivity(a, this.activities.parallelStream()
+                                .flatMap(
+                                        l1 -> l1.getIntradayMinuteActivitySeries().getElements().parallelStream())
+                                .collect(Collectors.groupingBy(FitbitMinuteActivity::getTime, Collectors.summingDouble(FitbitMinuteActivity::getStepCount))).get(a)))
+                        .sorted((a, b) -> a.getTime().compareTo(b.getTime()))
+                        .collect(Collectors.toList()));
     }
 
     public Double getTotalSteps() {
-        return this.collectDayActivity(
-                Collectors.summingDouble(FitbitMinuteActivity::getStepCount));
-    }
-
-    public FitbitIntradayActivityRange getWhereDayOfWeek(DayOfWeek dayOfWeek) {
-        return this.getWherePredicate(a -> a.getDate().getDayOfWeek().equals(dayOfWeek));
-    }
-
-    public FitbitIntradayActivityRange getWhereMonth(Month month) {
-        return this.getWherePredicate(a -> a.getDate().getMonth().equals(month));
+        return this.activities.parallelStream()
+                .flatMap(
+                        l -> l.getIntradayMinuteActivitySeries().getElements().parallelStream())
+                .collect(Collectors.summingDouble(FitbitMinuteActivity::getStepCount));
     }
 
     @Override
     public Iterator<FitbitIntradayActivity> iterator() {
         return this.activities.iterator();
-    }
-
-    private <E> E collectDayActivity(Collector<FitbitMinuteActivity, ?, E> collector) {
-        return this.activities.parallelStream()
-                .flatMap(
-                        l -> l.getIntradayMinuteActivitySeries().getElements().parallelStream())
-                .collect(collector);
-    }
-
-    private FitbitMinuteActivitySeries collectGroupDayActivity(
-            Collector<FitbitMinuteActivity, ?, Double> collector) {
-        return FitbitMinuteActivitySeries.fromMap(this.collectDayActivity(
-                Collectors.groupingBy(FitbitMinuteActivity::getTime, collector)));
-    }
-
-    private FitbitIntradayActivityRange getWherePredicate(
-            Predicate<? super FitbitIntradayActivity> predicate) {
-        return new FitbitIntradayActivityRange(this.activities.parallelStream().filter(predicate)
-                .collect(Collectors.toList()));
     }
 
     public List<FitbitIntradayActivity> getItems() {

@@ -4,21 +4,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.boot.SessionFactoryBuilder;
-import org.hibernate.jpa.criteria.expression.function.AggregationFunction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.validation.constraints.Min;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Created by panda on 08/11/2016.
@@ -79,7 +72,10 @@ public class ActivityService {
         } else {
             entityManager.persist(newActivity);
         }
+    }
 
+    public List<DayActivity> getAllActivity() {
+        return entityManager.createNamedQuery("getAllDayActivity", DayActivity.class).getResultList();
     }
 
 }

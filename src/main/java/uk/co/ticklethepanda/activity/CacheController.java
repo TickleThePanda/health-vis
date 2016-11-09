@@ -13,11 +13,8 @@ import uk.co.ticklethepanda.activity.local.ActivityService;
 import uk.co.ticklethepanda.activity.local.transformers.DayActivityFitbitToEntity;
 import uk.co.ticklethepanda.activity.utility.LocalDateRange;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 /**

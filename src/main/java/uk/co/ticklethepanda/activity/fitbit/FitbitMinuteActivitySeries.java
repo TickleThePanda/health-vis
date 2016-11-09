@@ -24,13 +24,6 @@ public class FitbitMinuteActivitySeries implements Iterable<FitbitMinuteActivity
         this.dataset = new ArrayList<>(activity);
     }
 
-    public static FitbitMinuteActivitySeries fromMap(Map<LocalTime, Double> map) {
-        return new FitbitMinuteActivitySeries(
-                map.keySet().stream().map(a -> new FitbitMinuteActivity(a, map.get(a)))
-                        .sorted((a, b) -> a.getTime().compareTo(b.getTime()))
-                        .collect(Collectors.toList()));
-    }
-
     public FitbitMinuteActivity getByLocalTime(LocalTime plusMinutes) {
         return this.dataset.stream().filter(a -> a.getTime().equals(plusMinutes))
                 .findFirst().get();
