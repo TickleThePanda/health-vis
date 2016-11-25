@@ -3,26 +3,31 @@ package uk.co.ticklethepanda.activity.dto.transformers;
 import uk.co.ticklethepanda.activity.Transformer;
 import uk.co.ticklethepanda.activity.dto.DayActivityDto;
 import uk.co.ticklethepanda.activity.dto.MinuteActivityDto;
-import uk.co.ticklethepanda.activity.local.DayActivity;
+import uk.co.ticklethepanda.activity.local.MinuteActivity;
 
-import java.util.TreeSet;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Created by panda on 08/11/2016.
+ *
  */
-public class DayActivityEntityToDto implements Transformer<DayActivity, DayActivityDto> {
+public class DayActivityEntityToDto implements Transformer<Collection<MinuteActivity>, DayActivityDto> {
     @Override
-    public DayActivityDto transform(DayActivity input) {
-        TreeSet<MinuteActivityDto> activities = new TreeSet<>((a, b) -> a.time.compareTo(b.time));
+    public DayActivityDto transform(Collection<MinuteActivity> input) {
+        LocalDate localDate = MinuteActivity.representsOneDay(input)
+                ? input.stream().findFirst().get().getDate()
+                : null;
 
-        input.getMinuteActivityEntities().forEach(mae -> {
-            MinuteActivityDto ma = new MinuteActivityDto(
-                    mae.getTime(),
-                    mae.getSteps());
+        Set<MinuteActivityDto> activities = input
+                .stream()
+                .map(mae -> new MinuteActivityDto(
+                        mae.getTime(),
+                        mae.getSteps()))
+                .sorted((a, b) -> a.time.compareTo(b.time))
+                .collect(Collectors.toSet());
 
-            activities.add(ma);
-        });
-
-        return new DayActivityDto(input.getDate(), activities);
+        return new DayActivityDto(localDate, activities);
     }
 }

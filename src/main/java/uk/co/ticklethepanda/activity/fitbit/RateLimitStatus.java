@@ -5,7 +5,7 @@ import com.google.gson.annotations.Expose;
 import java.time.LocalDate;
 
 /**
- * Created by panda on 07/11/2016.
+ *
  */
 public class RateLimitStatus {
 

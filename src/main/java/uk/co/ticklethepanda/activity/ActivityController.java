@@ -1,24 +1,20 @@
 package uk.co.ticklethepanda.activity;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import uk.co.ticklethepanda.activity.dto.DayActivityDto;
 import uk.co.ticklethepanda.activity.dto.transformers.DayActivityEntityToDto;
-import uk.co.ticklethepanda.activity.fitbit.DaoException;
 import uk.co.ticklethepanda.activity.local.ActivityService;
-import uk.co.ticklethepanda.activity.local.DayActivity;
 import uk.co.ticklethepanda.activity.local.MinuteActivity;
 
-import java.io.IOException;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.Month;
-import java.time.YearMonth;
 import java.util.*;
-import static java.util.stream.Collectors.*;
 
 /**
  * @author Lovingly hand crafted by the ISIS Business Applications Team
@@ -27,10 +23,13 @@ import static java.util.stream.Collectors.*;
 @RequestMapping(value = "/health/activity")
 public class ActivityController {
 
+    private static final Logger log = LogManager.getLogger();
+
     private final ActivityService activityService;
 
-    private final Transformer<DayActivity, DayActivityDto> dayActivityEntityToDto
+    private final Transformer<Collection<MinuteActivity>, DayActivityDto> dayActivityEntityToDto
             = new DayActivityEntityToDto();
+    public static final Comparator<MinuteActivity> MINUTE_ACTIVITY_COMPARATOR_BY_TIME = (a, b) -> a.getTime().compareTo(b.getTime());
 
     public ActivityController(@Autowired ActivityService activityService) {
         this.activityService = activityService;
@@ -39,65 +38,28 @@ public class ActivityController {
     @RequestMapping(value = "/average/day")
     @ResponseBody
     public DayActivityDto getAverageDay() {
-        List<DayActivity> activities = activityService.getAllActivity();
-
-        Set<MinuteActivity> activityForDay = activities.stream()
-                .flatMap(a -> a.getMinuteActivityEntities().stream())
-                .collect(groupingBy(MinuteActivity::getTime,
-                        averagingInt(MinuteActivity::getSteps)))
-                .entrySet().stream()
-                .map(e -> new MinuteActivity(e.getKey(), e.getValue().intValue()))
-                .collect(toSet());
-
-        return dayActivityEntityToDto.transform(new DayActivity(null, activityForDay));
+        return dayActivityEntityToDto.transform(activityService.getAverageDay());
     }
 
-    @RequestMapping(value = "/average/day/by/weekdays")
+    @RequestMapping(value = "/average/day", params = "aggregate=weekday")
     @ResponseBody
     public Map<DayOfWeek, DayActivityDto> getDataByWeekday() {
-        List<DayActivity> activities = activityService.getAllActivity();
+        Map<DayOfWeek, Set<MinuteActivity>> entities = activityService.getAverageDayByWeekday();
 
-        Map<DayOfWeek, DayActivityDto> daysToActivity = new HashMap<>();
+        Map<DayOfWeek, DayActivityDto> dtos = new HashMap<>();
+        entities.entrySet().forEach(e -> dtos.put(e.getKey(), dayActivityEntityToDto.transform(e.getValue())));
 
-        for(DayOfWeek dayOfWeek : DayOfWeek.values()) {
-            Set<MinuteActivity> activityForDay = activities.stream()
-                    .filter(a -> a.getDate().getDayOfWeek().equals(dayOfWeek))
-                    .flatMap(a -> a.getMinuteActivityEntities().stream())
-                    .collect(groupingBy(MinuteActivity::getTime,
-                            averagingInt(MinuteActivity::getSteps)))
-                    .entrySet().stream()
-                    .map(e -> new MinuteActivity(e.getKey(), e.getValue().intValue()))
-                    .collect(toSet());
-
-            daysToActivity.put(dayOfWeek,
-                    dayActivityEntityToDto.transform(new DayActivity(null, activityForDay)));
-        }
-
-        return daysToActivity;
+        return dtos;
     }
 
-
-    @RequestMapping(value = "/average/day/by/months")
+    @RequestMapping(value = "/average/day/by/month", params = "aggregate=month")
     @ResponseBody
     public Map<Month, DayActivityDto> getDataByMonths() {
-        List<DayActivity> activities = activityService.getAllActivity();
+        Map<Month, Set<MinuteActivity>> entities = activityService.getAverageDayByMonth();
 
-        Map<Month, DayActivityDto> daysToActivity = new HashMap<>();
+        Map<Month, DayActivityDto> dtos = new HashMap<>();
+        entities.entrySet().forEach(e -> dtos.put(e.getKey(), dayActivityEntityToDto.transform(e.getValue())));
 
-        for(Month month : Month.values()) {
-            Set<MinuteActivity> activityForDay = activities.stream()
-                    .filter(a -> a.getDate().getMonth().equals(month))
-                    .flatMap(a -> a.getMinuteActivityEntities().stream())
-                    .collect(groupingBy(MinuteActivity::getTime,
-                            averagingInt(MinuteActivity::getSteps)))
-                    .entrySet().stream()
-                    .map(e -> new MinuteActivity(e.getKey(), e.getValue().intValue()))
-                    .collect(toSet());
-
-            daysToActivity.put(month,
-                    dayActivityEntityToDto.transform(new DayActivity(null, activityForDay)));
-        }
-
-        return daysToActivity;
+        return dtos;
     }
 }

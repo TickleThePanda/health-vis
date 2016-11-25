@@ -1,35 +1,55 @@
 package uk.co.ticklethepanda.activity.local;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalTime;
+import java.time.Month;
+import java.util.*;
 
 /**
- * Created by panda on 08/11/2016.
+ *
  */
-@Component
+@Service
+@Transactional
 public class ActivityService {
+
+    private static Logger logger = LogManager.getLogger();
 
     public static final int MINUTES_IN_A_DAY = 60 * 24;
 
     @Autowired
     private EntityManager entityManager;
-    private Logger logger = LogManager.getLogger();
+
+    public List<MinuteActivity> getAllActivity() {
+        return entityManager.createNamedQuery("findAll", MinuteActivity.class).getResultList();
+    }
 
     @Transactional
-    public DayActivity getActivityForDate(LocalDate date) {
+    public Collection<MinuteActivity> getActivityForDate(LocalDate date) {
         try {
-            return entityManager.createNamedQuery("findDayActivityByDate", DayActivity.class)
+            return entityManager.createNamedQuery("findByDate", MinuteActivity.class)
                     .setParameter("date", date)
+                    .getResultList();
+        } catch (NoResultException exception) {
+            return null;
+        }
+    }
+
+    @Transactional
+    private MinuteActivity getActivityForTimeAndDate(LocalDate date, LocalTime time) {
+        try {
+            return entityManager.createNamedQuery("findByDateAndTime", MinuteActivity.class)
+                    .setParameter("date", date)
+                    .setParameter("time", time)
                     .getSingleResult();
         } catch (NoResultException exception) {
             return null;
@@ -38,10 +58,12 @@ public class ActivityService {
 
     @Transactional
     public boolean hasCompleteEntry(LocalDate date) {
-        DayActivity dayActivity = this.getActivityForDate(date);
-        if(dayActivity != null
-                && dayActivity.getMinuteActivityEntities() != null
-                && dayActivity.getMinuteActivityEntities().size() == MINUTES_IN_A_DAY) {
+        int countByDate = entityManager.createNamedQuery("countByDate", Number.class)
+                .setParameter("date", date)
+                .getSingleResult()
+                .intValue();
+
+        if(countByDate == MINUTES_IN_A_DAY) {
             return true;
         } else {
             return false;
@@ -49,33 +71,95 @@ public class ActivityService {
     }
 
     @Transactional
-    public void replaceActivityWith(DayActivity newActivity) {
-        DayActivity currentActivity = getActivityForDate(newActivity.getDate());
+    public void replaceActivity(MinuteActivity newActivity) {
+        MinuteActivity currentActivity =
+                getActivityForTimeAndDate(newActivity.getDate(), newActivity.getTime());
+
         if(currentActivity != null) {
-            currentActivity.setMinuteActivityEntities(newActivity.getMinuteActivityEntities());
-            currentActivity.getMinuteActivityEntities().forEach(minuteActivity -> minuteActivity.setDayActivity(currentActivity));
-
-            Session session = entityManager.unwrap(Session.class);
-            Transaction tx = session.beginTransaction();
-            int count = 0;
-            for(MinuteActivity minuteActivity : currentActivity.getMinuteActivityEntities()) {
-                session.save(minuteActivity);
-                if(++count % 50 == 0) {
-                    session.flush();
-                    session.clear();
-                }
-            }
-
-            tx.commit();
-            session.close();
+            currentActivity.setSteps(newActivity.getSteps());
             entityManager.persist(currentActivity);
         } else {
             entityManager.persist(newActivity);
         }
     }
 
-    public List<DayActivity> getAllActivity() {
-        return entityManager.createNamedQuery("getAllDayActivity", DayActivity.class).getResultList();
+    @Transactional
+    @Cacheable
+    public Set<MinuteActivity> getAverageDay() {
+        List<Object[]> entries = entityManager.createNamedQuery("getAverageDay", Object[].class).getResultList();
+        Set<MinuteActivity> minuteActivities = new HashSet<>();
+        for(Object[] entry : entries) {
+
+            LocalTime time = (LocalTime) entry[0];
+            double steps = (double) entry[1];
+
+            MinuteActivity minuteActivity = new MinuteActivity();
+            minuteActivity.setTime(time);
+            minuteActivity.setSteps(steps);
+
+            minuteActivities.add(minuteActivity);
+        }
+        return minuteActivities;
     }
+
+    @Transactional
+    @Cacheable
+    public Map<Month, Set<MinuteActivity>> getAverageDayByMonth() {
+        List<Object[]> entries = entityManager.createNamedQuery("getAverageDayByMonth", Object[].class).getResultList();
+
+        Map<Month, Set<MinuteActivity>> monthsToActvivites = new HashMap<>();
+
+        for(Object[] entry : entries) {
+            int monthNumber = (int) entry[0];
+            Month month = Month.of(monthNumber);
+
+            LocalTime time = (LocalTime) entry[1];
+            double steps = (double) entry[2];
+
+            if(!monthsToActvivites.containsKey(month)) {
+                monthsToActvivites.put(month, new HashSet<>());
+            }
+
+            MinuteActivity minuteActivity = new MinuteActivity();
+            minuteActivity.setTime(time);
+            minuteActivity.setSteps(steps);
+
+            monthsToActvivites.get(month).add(minuteActivity);
+        }
+        return monthsToActvivites;
+    }
+
+    @Transactional
+    @Cacheable
+    public Map<DayOfWeek, Set<MinuteActivity>> getAverageDayByWeekday() {
+        List<Object[]> entries = entityManager.createNamedQuery("getAverageDayByWeekday", Object[].class).getResultList();
+
+        Map<DayOfWeek, Set<MinuteActivity>> dayOfWeekToActivities = new HashMap<>();
+
+        for(Object[] entry : entries) {
+            int dayOfWeekNumber = (int) entry[0];
+            DayOfWeek dayOfWeek = DayOfWeek.of(dayOfWeekNumber + 1);
+            LocalTime time = (LocalTime) entry[1];
+            double steps = (double) entry[2];
+
+            if(!dayOfWeekToActivities.containsKey(dayOfWeek)) {
+                dayOfWeekToActivities.put(dayOfWeek, new HashSet<>());
+            }
+
+            MinuteActivity minuteActivity = new MinuteActivity();
+            minuteActivity.setTime(time);
+            minuteActivity.setSteps(steps);
+
+            dayOfWeekToActivities.get(dayOfWeek).add(minuteActivity);
+        }
+        return dayOfWeekToActivities;
+    }
+
+    public void replaceActivities(Collection<MinuteActivity> newActivity) {
+        for(MinuteActivity minuteActivity : newActivity) {
+            replaceActivity(minuteActivity);
+        }
+    }
+
 
 }

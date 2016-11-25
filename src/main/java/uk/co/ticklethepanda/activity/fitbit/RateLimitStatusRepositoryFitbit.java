@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 
 /**
- * Created by panda on 07/11/2016.
+ *
  */
 public class RateLimitStatusRepositoryFitbit {
 

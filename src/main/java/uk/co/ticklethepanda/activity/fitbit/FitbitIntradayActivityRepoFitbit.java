@@ -8,14 +8,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.co.ticklethepanda.activity.utility.LocalDateRange;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FitbitIntradayActivityRepoFitbit implements FitbitIntradayActivityRepo {
 
