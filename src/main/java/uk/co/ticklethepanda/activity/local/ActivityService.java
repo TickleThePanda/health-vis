@@ -85,9 +85,9 @@ public class ActivityService {
 
     @Transactional
     @Cacheable
-    public Set<MinuteActivity> getAverageDay() {
+    public List<MinuteActivity> getAverageDay() {
         List<Object[]> entries = entityManager.createNamedQuery("getAverageDay", Object[].class).getResultList();
-        Set<MinuteActivity> minuteActivities = new HashSet<>();
+        List<MinuteActivity> minuteActivities = new ArrayList<>();
         for(Object[] entry : entries) {
 
             LocalTime time = (LocalTime) entry[0];
@@ -104,10 +104,10 @@ public class ActivityService {
 
     @Transactional
     @Cacheable
-    public Map<Month, Set<MinuteActivity>> getAverageDayByMonth() {
+    public Map<Month, List<MinuteActivity>> getAverageDayByMonth() {
         List<Object[]> entries = entityManager.createNamedQuery("getAverageDayByMonth", Object[].class).getResultList();
 
-        Map<Month, Set<MinuteActivity>> monthsToActvivites = new HashMap<>();
+        Map<Month, List<MinuteActivity>> monthsToActvivites = new TreeMap<>();
 
         for(Object[] entry : entries) {
             int monthNumber = (int) entry[0];
@@ -117,7 +117,7 @@ public class ActivityService {
             double steps = (double) entry[2];
 
             if(!monthsToActvivites.containsKey(month)) {
-                monthsToActvivites.put(month, new HashSet<>());
+                monthsToActvivites.put(month, new ArrayList<>());
             }
 
             MinuteActivity minuteActivity = new MinuteActivity();
@@ -131,10 +131,10 @@ public class ActivityService {
 
     @Transactional
     @Cacheable
-    public Map<DayOfWeek, Set<MinuteActivity>> getAverageDayByWeekday() {
+    public Map<DayOfWeek, List<MinuteActivity>> getAverageDayByWeekday() {
         List<Object[]> entries = entityManager.createNamedQuery("getAverageDayByWeekday", Object[].class).getResultList();
 
-        Map<DayOfWeek, Set<MinuteActivity>> dayOfWeekToActivities = new HashMap<>();
+        Map<DayOfWeek, List<MinuteActivity>> dayOfWeekToActivities = new TreeMap<>();
 
         for(Object[] entry : entries) {
             int dayOfWeekNumber = (int) entry[0];
@@ -143,7 +143,7 @@ public class ActivityService {
             double steps = (double) entry[2];
 
             if(!dayOfWeekToActivities.containsKey(dayOfWeek)) {
-                dayOfWeekToActivities.put(dayOfWeek, new HashSet<>());
+                dayOfWeekToActivities.put(dayOfWeek, new ArrayList<>());
             }
 
             MinuteActivity minuteActivity = new MinuteActivity();
