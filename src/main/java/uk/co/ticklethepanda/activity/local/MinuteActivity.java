@@ -31,17 +31,23 @@ import static java.util.stream.Collectors.toList;
         @NamedQuery(name = "getAverageDayByWeekday",
                 query = "select weekday(activity.date), activity.time, avg(activity.steps)"
                         + " from MinuteActivity as activity"
+                        + " where " + MinuteActivity.DATE_HAS_STEPS
                         + " group by weekday(activity.date), activity.time"
                         + " order by weekday(activity.date), activity.time"),
         @NamedQuery(name = "getAverageDayByMonth",
                 query = "select month(activity.date), activity.time, avg(activity.steps)"
                         + " from MinuteActivity as activity"
+                        + " where " + MinuteActivity.DATE_HAS_STEPS
                         + " group by month(activity.date), activity.time"
                         + " order by month(activity.date), activity.time")
 
 })
 public class MinuteActivity {
 
+    public static final String DATE_HAS_STEPS = " activity.date" +
+            " in (select activity.date" +
+            " from MinuteActivity as activity" +
+            " group by activity.date having sum(activity.steps) > 0)";
     @Id
     @GeneratedValue(generator = "increment")
     @GenericGenerator(name="increment", strategy = "increment")
