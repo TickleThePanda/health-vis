@@ -92,7 +92,7 @@ public class FitbitCacheController {
         credentialManager.getCredentialsForUser("me").refreshToken();
         logger.info("refreshed token");
 
-        FitbitIntradayActivityRepo intradayActivityDao = new FitbitIntradayActivityRepoFitbit(
+        FitbitIntradayActivityRepo intradayActivityDao = new FitbitIntradayActivityRepo(
                 credentialManager.getRequestFactoryForMe());
 
         DayActivityFitbitToEntity transformer = new DayActivityFitbitToEntity();
