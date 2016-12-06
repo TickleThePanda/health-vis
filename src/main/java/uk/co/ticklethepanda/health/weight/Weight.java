@@ -15,7 +15,9 @@ import java.time.LocalDate;
 @NamedQueries({
         @NamedQuery(name = "weight.findByDate",
                 query = "from Weight as weight " +
-                        "where weight.date = :date")
+                        "where weight.date = :date"),
+        @NamedQuery(name = "weight.findAll",
+                query = "from Weight as weight")
 })
 public class Weight {
 

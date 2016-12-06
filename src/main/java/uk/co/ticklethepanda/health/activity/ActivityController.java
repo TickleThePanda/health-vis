@@ -18,7 +18,7 @@ import java.time.Month;
 import java.util.*;
 
 /**
- * @author Lovingly hand crafted by the ISIS Business Applications Team
+ *
  */
 @Controller
 @RequestMapping(value = "/health/activity")
@@ -40,8 +40,6 @@ public class ActivityController {
         this.activityService = activityService;
         this.activityChartService = activityChartService;
     }
-
-
 
     @RequestMapping(value = "/average/day")
     @ResponseBody

@@ -10,8 +10,10 @@ import org.knowm.xchart.style.markers.SeriesMarkers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import uk.co.ticklethepanda.health.ChartConfig;
 import uk.co.ticklethepanda.health.activity.local.ActivityService;
 import uk.co.ticklethepanda.health.activity.local.MinuteActivity;
+import uk.co.ticklethepanda.utility.image.PngToByteArray;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -37,9 +39,6 @@ public class ActivityChartService {
 
     private static Logger log = LogManager.getLogger();
 
-
-    public static final int AXIS_HEIGHT = 48;
-    public static final int CHART_PADDING = 3;
     private final ActivityService activityService;
 
     private byte[] dayImage;
@@ -80,7 +79,7 @@ public class ActivityChartService {
                 Collections.singletonMap(
                         TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
         chart.getStyler().setDatePattern("HH:mm");
-        chart.getStyler().setChartPadding(CHART_PADDING);
+        chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
 
         XYSeries series = chart.addSeries("data", xData, yData);
 
@@ -90,7 +89,7 @@ public class ActivityChartService {
         Graphics2D graphics2D = bufferedImage.createGraphics();
         chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
 
-        this.dayImage = convertImageToPngByteArray(bufferedImage);
+        this.dayImage = PngToByteArray.convert(bufferedImage);
 
         log.info("cached activity chart");
     }
@@ -100,7 +99,7 @@ public class ActivityChartService {
         log.info("caching activity by weekday chart");
         Map<DayOfWeek, List<MinuteActivity>> entities = activityService.getAverageDayByWeekday();
 
-        this.dayByWeekdayImage = convertImageToPngByteArray(createFacetedChart(entities));
+        this.dayByWeekdayImage = PngToByteArray.convert(createFacetedChart(entities));
         log.info("caching activity by weekday chart");
     }
 
@@ -109,7 +108,7 @@ public class ActivityChartService {
         log.info("caching activity by month chart");
         Map<Month, List<MinuteActivity>> entities = activityService.getAverageDayByMonth();
 
-        this.dayByMonthImage = convertImageToPngByteArray(createFacetedChart(entities));
+        this.dayByMonthImage = PngToByteArray.convert(createFacetedChart(entities));
         log.info("cached activity by month chart");
     }
 
@@ -119,7 +118,7 @@ public class ActivityChartService {
         int chartWidth = 1000;
         int chartHeight = 150;
 
-        BufferedImage imageSet = new BufferedImage(chartWidth, chartHeight * entities.size() + AXIS_HEIGHT, BufferedImage.TYPE_INT_RGB);
+        BufferedImage imageSet = new BufferedImage(chartWidth, chartHeight * entities.size() + ChartConfig.AXIS_HEIGHT, BufferedImage.TYPE_INT_RGB);
 
         Graphics2D imageSetGraphics = imageSet.createGraphics();
 
@@ -156,7 +155,7 @@ public class ActivityChartService {
 
             XYChart chart = new XYChartBuilder()
                     .width(chartWidth)
-                    .height(chartHeight + (last ? AXIS_HEIGHT : 0))
+                    .height(chartHeight + (last ? ChartConfig.AXIS_HEIGHT : 0))
                     .xAxisTitle(last ? "Time of Day" : null)
                     .yAxisTitle("Steps")
                     .title(title)
@@ -173,14 +172,14 @@ public class ActivityChartService {
             chart.getStyler().setYAxisMax(max);
             chart.getStyler().setYAxisTicksVisible(true);
             chart.getStyler().setXAxisTicksVisible(last);
-            chart.getStyler().setChartPadding(CHART_PADDING);
+            chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
 
             XYSeries series = chart.addSeries("data", xData, yData);
 
             series.setMarker(SeriesMarkers.NONE);
             series.setLineColor(Color.getHSBColor((float)i/(float)entities.size(), 0.6f, 0.85f));
 
-            BufferedImage individualImage = new BufferedImage(chartWidth, chartHeight + (last ? AXIS_HEIGHT : 0), BufferedImage.TYPE_INT_RGB);
+            BufferedImage individualImage = new BufferedImage(chartWidth, chartHeight + (last ? ChartConfig.AXIS_HEIGHT : 0), BufferedImage.TYPE_INT_RGB);
 
             Graphics2D individualGraphics = individualImage.createGraphics();
             chart.paint(individualGraphics, chart.getWidth(), chart.getHeight());
@@ -192,24 +191,6 @@ public class ActivityChartService {
 
         imageSetGraphics.dispose();
         return imageSet;
-    }
-
-    private byte[] convertImageToPngByteArray(BufferedImage image) throws IOException {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        ColorModel cm = image.getColorModel();
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-        WritableRaster raster = image.copyData(null);
-        BufferedImage imageClone = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-
-        Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("png");
-        ImageWriter writer = iter.next();
-
-        writer.setOutput(ImageIO.createImageOutputStream(stream));
-        IIOImage ioImage = new IIOImage(imageClone, null, null);
-        writer.write(null, ioImage, null);
-        writer.dispose();
-
-        return stream.toByteArray();
     }
 
     public byte[] getAverageDayByMonthImage() throws IOException {

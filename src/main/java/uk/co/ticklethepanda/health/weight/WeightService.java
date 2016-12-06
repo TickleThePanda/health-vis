@@ -37,4 +37,8 @@ public class WeightService {
             entityManager.merge(oldWeightEntry);
         }
     }
+
+    public List<Weight> getAllWeight() {
+        return entityManager.createNamedQuery("weight.findAll", Weight.class).getResultList();
+    }
 }
