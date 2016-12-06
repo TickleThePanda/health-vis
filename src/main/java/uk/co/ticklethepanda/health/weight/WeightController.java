@@ -46,6 +46,7 @@ public class WeightController {
     private static final Logger LOG = LogManager.getLogger();
     private final WeightService weightService;
     private final String healthUrl;
+    private byte[] chart;
 
     public WeightController(
             @Autowired WeightService weightService,
@@ -94,8 +95,15 @@ public class WeightController {
     @RequestMapping(method = RequestMethod.GET, params = {"img"}, produces = "image/png")
     @ResponseBody
     public byte[] getWeightChart() throws IOException {
-        LocalDate today = LocalDate.now();
+        if(chart == null) {
+            cacheWeightChart();
+        }
 
+        return chart;
+    }
+
+    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    public void cacheWeightChart() throws IOException {
         List<Double> yData = weightService.getAllWeight()
                 .stream()
                 .map(w -> {
@@ -119,8 +127,8 @@ public class WeightController {
         XYChart chart = new XYChartBuilder()
                 .width(1000)
                 .height(500)
-                .xAxisTitle("Time of Day")
-                .yAxisTitle("Steps")
+                .xAxisTitle("Date")
+                .yAxisTitle("Weight (kg)")
                 .theme(Styler.ChartTheme.GGPlot2)
                 .build();
 
@@ -131,7 +139,7 @@ public class WeightController {
         chart.getStyler().setAxisTickLabelsFont(font.deriveFont(
                 Collections.singletonMap(
                         TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
-        chart.getStyler().setDatePattern("HH:mm");
+        chart.getStyler().setDatePattern("YYYY-MM-dd");
         chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
         chart.getStyler().setMarkerSize(4);
 
@@ -143,6 +151,7 @@ public class WeightController {
         Graphics2D graphics2D = bufferedImage.createGraphics();
         chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
 
-        return PngToByteArray.convert(bufferedImage);
+
+        this.chart = PngToByteArray.convert(bufferedImage);
     }
 }
