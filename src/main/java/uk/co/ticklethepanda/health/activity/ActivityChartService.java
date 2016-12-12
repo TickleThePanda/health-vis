@@ -25,7 +25,6 @@ import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -144,7 +143,7 @@ public class ActivityChartService {
                             TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
             chart.getStyler().setDatePattern("HH:mm");
             chart.getStyler().setYAxisMax(max);
-            chart.getStyler().setYAxisTicksVisible(true);
+            chart.getStyler().setYAxisTicksVisible(false);
             chart.getStyler().setXAxisTicksVisible(last);
             chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
 
@@ -191,6 +190,7 @@ public class ActivityChartService {
         Font font = chart.getStyler().getAxisTickLabelsFont();
 
         chart.getStyler().setLegendVisible(false);
+        chart.getStyler().setYAxisTicksVisible(false);
         chart.getStyler().setAxisTickLabelsFont(font.deriveFont(
                 Collections.singletonMap(
                         TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
