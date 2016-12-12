@@ -15,21 +15,17 @@ import uk.co.ticklethepanda.health.activity.local.ActivityService;
 import uk.co.ticklethepanda.health.activity.local.MinuteActivity;
 import uk.co.ticklethepanda.utility.image.PngToByteArray;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.WritableRaster;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +40,7 @@ public class ActivityChartService {
     private byte[] dayImage;
     private byte[] dayByWeekdayImage;
     private byte[] dayByMonthImage;
+    private byte[] dayImageSinceLastMonth;
 
     public ActivityChartService(@Autowired ActivityService activityService) {
         this.activityService = activityService;
@@ -53,45 +50,22 @@ public class ActivityChartService {
     public void cacheDayImage() throws IOException {
         log.info("caching activity chart");
 
-        LocalDate today = LocalDate.now();
+        List<MinuteActivity> averageDays = activityService.getAverageDay();
 
-        List<Double> yData = activityService.getAverageDay()
-                .stream()
-                .map(a -> a.getSteps())
-                .collect(Collectors.toList());
-
-        List<Date> xData = activityService.getAverageDay().stream()
-                .map(a -> Date.from(a.getTime().atDate(today).toInstant(ZoneOffset.UTC)))
-                .collect(Collectors.toList());
-
-        XYChart chart = new XYChartBuilder()
-                .width(1000)
-                .height(500)
-                .xAxisTitle("Time of Day")
-                .yAxisTitle("Steps")
-                .theme(Styler.ChartTheme.GGPlot2)
-                .build();
-
-        Font font = chart.getStyler().getAxisTickLabelsFont();
-
-        chart.getStyler().setLegendVisible(false);
-        chart.getStyler().setAxisTickLabelsFont(font.deriveFont(
-                Collections.singletonMap(
-                        TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
-        chart.getStyler().setDatePattern("HH:mm");
-        chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
-
-        XYSeries series = chart.addSeries("data", xData, yData);
-
-        series.setMarker(SeriesMarkers.NONE);
-
-        BufferedImage bufferedImage = new BufferedImage(chart.getWidth(), chart.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics2D = bufferedImage.createGraphics();
-        chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
+        BufferedImage bufferedImage = createChart(averageDays);
 
         this.dayImage = PngToByteArray.convert(bufferedImage);
 
         log.info("cached activity chart");
+    }
+
+    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    public void cacheDayByRecent() throws IOException {
+        log.info("caching activity by recent");
+        List<MinuteActivity> activities = activityService.getAverageDaySinceDate(LocalDate.now().minus(30, ChronoUnit.DAYS));
+
+        this.dayImageSinceLastMonth = PngToByteArray.convert(createChart(activities));
+        log.info("cached activity by recent");
     }
 
     @Scheduled(fixedRate = 1000*60, initialDelay = 1)
@@ -193,6 +167,47 @@ public class ActivityChartService {
         return imageSet;
     }
 
+
+    private BufferedImage createChart(List<MinuteActivity> averageDays) {
+        LocalDate today = LocalDate.now();
+
+        List<Double> yData = averageDays
+                .stream()
+                .map(a -> a.getSteps())
+                .collect(Collectors.toList());
+
+        List<Date> xData = averageDays.stream()
+                .map(a -> Date.from(a.getTime().atDate(today).toInstant(ZoneOffset.UTC)))
+                .collect(Collectors.toList());
+
+        XYChart chart = new XYChartBuilder()
+                .width(1000)
+                .height(500)
+                .xAxisTitle("Time of Day")
+                .yAxisTitle("Steps")
+                .theme(Styler.ChartTheme.GGPlot2)
+                .build();
+
+        Font font = chart.getStyler().getAxisTickLabelsFont();
+
+        chart.getStyler().setLegendVisible(false);
+        chart.getStyler().setAxisTickLabelsFont(font.deriveFont(
+                Collections.singletonMap(
+                        TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
+        chart.getStyler().setDatePattern("HH:mm");
+        chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
+
+        XYSeries series = chart.addSeries("data", xData, yData);
+
+        series.setMarker(SeriesMarkers.NONE);
+
+        BufferedImage bufferedImage = new BufferedImage(chart.getWidth(), chart.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = bufferedImage.createGraphics();
+        chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
+        return bufferedImage;
+    }
+
+
     public byte[] getAverageDayByMonthImage() throws IOException {
         if(dayByMonthImage == null) {
             cacheDayByMonthImage();
@@ -214,5 +229,13 @@ public class ActivityChartService {
         }
 
         return dayImage;
+    }
+
+    public byte[] getAverageDayImageForLastMonth() throws IOException {
+        if(dayImageSinceLastMonth == null) {
+            cacheDayByRecent();
+        }
+
+        return dayImageSinceLastMonth;
     }
 }

@@ -75,6 +75,12 @@ public class ActivityController {
         return activityChartService.getAverageDayImage();
     }
 
+    @RequestMapping(value = "/average/day", params = {"img", "recent"}, produces = "image/png")
+    @ResponseBody
+    public byte[] getAverageDayImageForTheLastMonth() throws IOException {
+        return activityChartService.getAverageDayImageForLastMonth();
+    }
+
     @RequestMapping(value = "/average/day", params = {"img", "aggregate=weekday"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByWeekdayImage() throws IOException {

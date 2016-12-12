@@ -30,6 +30,12 @@ import static java.util.stream.Collectors.toList;
                 query = "select count(activity) from MinuteActivity as activity where activity.date = :date"),
         @NamedQuery(name = "getAverageDay",
                 query = "select activity.time, avg(activity.steps) from MinuteActivity as activity group by activity.time order by activity.time"),
+        @NamedQuery(name = "getAverageDaySinceDate",
+                query = "select activity.time, avg(activity.steps)"
+                        + " from MinuteActivity as activity"
+                        + " where activity.date > :date and " + MinuteActivity.DATE_HAS_STEPS
+                        + " group by activity.time"
+                        + " order by activity.time"),
         @NamedQuery(name = "getAverageDayByWeekday",
                 query = "select weekday(activity.date), activity.time, avg(activity.steps)"
                         + " from MinuteActivity as activity"

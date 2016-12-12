@@ -87,6 +87,19 @@ public class ActivityService {
     @Cacheable
     public List<MinuteActivity> getAverageDay() {
         List<Object[]> entries = entityManager.createNamedQuery("getAverageDay", Object[].class).getResultList();
+        return convertResultsForAverageDay(entries);
+    }
+
+    @Transactional
+    @Cacheable
+    public List<MinuteActivity> getAverageDaySinceDate(LocalDate date) {
+        List<Object[]> entries = entityManager.createNamedQuery("getAverageDaySinceDate", Object[].class)
+                .setParameter("date", date)
+                .getResultList();
+        return convertResultsForAverageDay(entries);
+    }
+
+    private List<MinuteActivity> convertResultsForAverageDay(List<Object[]> entries) {
         List<MinuteActivity> minuteActivities = new ArrayList<>();
         for(Object[] entry : entries) {
 
