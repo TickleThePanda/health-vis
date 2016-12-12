@@ -20,16 +20,18 @@ import static java.util.stream.Collectors.toList;
         uniqueConstraints = @UniqueConstraint(columnNames = {"DATE", "TIME"}))
 @NamedQueries({
         @NamedQuery(name = "findByDateAndTime",
-                query = "from MinuteActivity as activity " +
-                        "where activity.date = :date and activity.time = :time"),
+                query = "from MinuteActivity as activity "
+                        + "where activity.date = :date and activity.time = :time"),
         @NamedQuery(name = "findByDate",
                 query = "from MinuteActivity as activity where activity.date = :date"),
-        @NamedQuery(name = "findAll",
-                query = "from MinuteActivity"),
         @NamedQuery(name = "countByDate",
                 query = "select count(activity) from MinuteActivity as activity where activity.date = :date"),
         @NamedQuery(name = "getAverageDay",
-                query = "select activity.time, avg(activity.steps) from MinuteActivity as activity group by activity.time order by activity.time"),
+                query = "select activity.time, avg(activity.steps)"
+                        + " from MinuteActivity as activity"
+                        + " where " + MinuteActivity.DATE_HAS_STEPS
+                        + " group by activity.time"
+                        + " order by activity.time"),
         @NamedQuery(name = "getAverageDaySinceDate",
                 query = "select activity.time, avg(activity.steps)"
                         + " from MinuteActivity as activity"
