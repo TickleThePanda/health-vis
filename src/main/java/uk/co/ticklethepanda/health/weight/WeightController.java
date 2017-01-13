@@ -104,8 +104,10 @@ public class WeightController {
 
     @Scheduled(fixedRate = 1000*60, initialDelay = 1)
     public void cacheWeightChart() throws IOException {
-        List<Double> yData = weightService.getAllWeight()
-                .stream()
+        LOG.info("caching weight chart");
+        List<Weight> weights = weightService.getAllWeightWithEntries();
+
+        List<Double> yData = weights.stream()
                 .map(w -> {
                     Double weightAm = w.getWeightAm();
                     Double weightPm = w.getWeightPm();
@@ -120,7 +122,7 @@ public class WeightController {
                 })
                 .collect(Collectors.toList());
 
-        List<Date> xData = weightService.getAllWeight().stream()
+        List<Date> xData = weights.stream()
                 .map(w -> Date.from(w.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant()))
                 .collect(Collectors.toList());
 

@@ -41,4 +41,8 @@ public class WeightService {
     public List<Weight> getAllWeight() {
         return entityManager.createNamedQuery("weight.findAll", Weight.class).getResultList();
     }
+
+    public List<Weight> getAllWeightWithEntries() {
+        return entityManager.createNamedQuery("weight.findWithEntries", Weight.class).getResultList();
+    }
 }
