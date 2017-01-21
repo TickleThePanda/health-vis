@@ -5,11 +5,11 @@ import java.time.LocalDate;
 public class WeightForPeriodDto {
     public LocalDate localDate;
     public EntryPeriod entryPeriod;
-    public Double weightValue;
+    public Double weight;
 
-    public WeightForPeriodDto(LocalDate localDate, EntryPeriod entryPeriod, Double weightValue) {
+    public WeightForPeriodDto(LocalDate localDate, EntryPeriod entryPeriod, Double weight) {
         this.localDate = localDate;
         this.entryPeriod = entryPeriod;
-        this.weightValue = weightValue;
+        this.weight = weight;
     }
 }
