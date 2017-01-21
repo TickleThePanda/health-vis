@@ -21,7 +21,7 @@ import java.util.*;
  *
  */
 @Controller
-@RequestMapping(value = "/health/activity")
+@RequestMapping(value = "/health/average-activity")
 public class ActivityController {
 
     private static final Logger log = LogManager.getLogger();
@@ -41,13 +41,13 @@ public class ActivityController {
         this.activityChartService = activityChartService;
     }
 
-    @RequestMapping(value = "/average/day")
+    @RequestMapping("/")
     @ResponseBody
     public DayActivityDto getAverageDay() {
         return dayActivityEntityToDto.transform(activityService.getAverageDay());
     }
 
-    @RequestMapping(value = "/average/day", params = "aggregate=weekday")
+    @RequestMapping(params = {"facet=weekday"})
     @ResponseBody
     public Map<DayOfWeek, DayActivityDto> getDataByWeekday() {
         Map<DayOfWeek, List<MinuteActivity>> entities = activityService.getAverageDayByWeekday();
@@ -58,7 +58,7 @@ public class ActivityController {
         return dtos;
     }
 
-    @RequestMapping(value = "/average/day", params = "aggregate=month")
+    @RequestMapping(params = {"facet=month"})
     @ResponseBody
     public Map<Month, DayActivityDto> getDataByMonths() {
         Map<Month, List<MinuteActivity>> entities = activityService.getAverageDayByMonth();
@@ -69,25 +69,25 @@ public class ActivityController {
         return dtos;
     }
 
-    @RequestMapping(value = "/average/day", params = {"img"}, produces = "image/png")
+    @RequestMapping(params = {"img"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayImage() throws IOException {
         return activityChartService.getAverageDayImage();
     }
 
-    @RequestMapping(value = "/average/day", params = {"img", "recent"}, produces = "image/png")
+    @RequestMapping(params = {"img", "recent"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayImageForTheLastMonth() throws IOException {
         return activityChartService.getAverageDayImageForLastMonth();
     }
 
-    @RequestMapping(value = "/average/day", params = {"img", "aggregate=weekday"}, produces = "image/png")
+    @RequestMapping(params = {"img", "facet=weekday"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByWeekdayImage() throws IOException {
         return activityChartService.getAverageDayByWeekdayImage();
     }
 
-    @RequestMapping(value = "/average/day", params = {"img", "aggregate=month"}, produces = "image/png")
+    @RequestMapping(params = {"img", "facet=month"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByMonthImage() throws IOException {
         return activityChartService.getAverageDayByMonthImage();
