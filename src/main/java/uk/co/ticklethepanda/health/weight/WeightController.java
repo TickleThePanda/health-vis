@@ -48,7 +48,8 @@ public class WeightController {
         return weightChartService.getWeightChart();
     }
 
-    @RequestMapping(value = "/{date}/{period}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{date}/{period}",
+            method = RequestMethod.PUT)
     @ResponseBody
     public WeightForPeriodDto saveWeightForDate(
             @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,

@@ -43,11 +43,11 @@ public class AppConfig extends WebSecurityConfigurerAdapter {
         http
                 .httpBasic().and()
                 .csrf().disable()
-                .cors().disable()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.POST).hasRole("ADMIN")
-                    .antMatchers(HttpMethod.PUT).hasRole("ADMIN")
-                    .antMatchers(HttpMethod.PATCH).hasRole("ADMIN");
+                    .antMatchers(HttpMethod.HEAD).permitAll()
+                    .antMatchers(HttpMethod.OPTIONS).permitAll()
+                    .antMatchers(HttpMethod.GET).permitAll()
+                    .anyRequest().hasRole("ADMIN");
     }
 
     @Bean
