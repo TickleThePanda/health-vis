@@ -1,16 +1,19 @@
-package uk.co.ticklethepanda.health.activity.fitbit;
+package uk.co.ticklethepanda.health.activity.fitbit.activity;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.co.ticklethepanda.health.activity.fitbit.DaoException;
+import uk.co.ticklethepanda.health.activity.fitbit.FitbitApi;
+import uk.co.ticklethepanda.health.activity.fitbit.ratelimit.RateLimitStatus;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
@@ -28,7 +31,12 @@ public class FitbitIntradayActivityRepo {
             .appendPattern("yyyy-MM-dd").toFormatter();
 
     private final static Gson GSON = new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation().create();
+            .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (json, typeOfT, context) ->
+                    LocalDate.parse(json.getAsString()))
+            .registerTypeAdapter(LocalTime.class, (JsonDeserializer<LocalTime>) (json, typeOfT, context) ->
+                    LocalTime.parse(json.getAsString()))
+            .excludeFieldsWithoutExposeAnnotation()
+            .create();
 
     private final HttpRequestFactory requestFactory;
 

@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.fitbit;
+package uk.co.ticklethepanda.health.activity.fitbit.activity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -50,4 +50,10 @@ public class FitbitMinuteActivitySeries implements Iterable<FitbitMinuteActivity
         this.dataset = dataset;
     }
 
+    @Override
+    public String toString() {
+        return "FitbitMinuteActivitySeries{" +
+                "dataset=" + dataset.toString() +
+                '}';
+    }
 }

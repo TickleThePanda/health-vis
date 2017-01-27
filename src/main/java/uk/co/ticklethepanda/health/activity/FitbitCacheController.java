@@ -1,6 +1,6 @@
 package uk.co.ticklethepanda.health.activity;
 
-import com.google.gson.Gson;
+import com.google.api.client.http.HttpRequestFactory;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,7 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.view.RedirectView;
 import uk.co.ticklethepanda.health.activity.fitbit.*;
+import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivity;
+import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivityRepo;
+import uk.co.ticklethepanda.health.activity.fitbit.ratelimit.RateLimitStatus;
+import uk.co.ticklethepanda.health.activity.fitbit.ratelimit.RateLimitStatusRepo;
+import uk.co.ticklethepanda.health.activity.fitbit.user.FitbitUserRepo;
 import uk.co.ticklethepanda.health.activity.local.ActivityService;
 import uk.co.ticklethepanda.health.activity.local.transformers.DayActivityFitbitToEntity;
 import uk.co.ticklethepanda.utility.date.LocalDateRange;
@@ -28,54 +34,53 @@ import java.util.concurrent.Callable;
 @RequestMapping(value = "/health/fitbit")
 public class FitbitCacheController {
 
+    public static final int HOURLY = 1000 * 60 * 60;
+    public static final int IMMEDIATE = 0;
+
     private static final Logger logger = LogManager.getLogger();
 
-    private static final String SCOPE = "activity";
+    private static final String SCOPE = "activity profile";
 
     private static final int EXPIRATION_TIME = 2592000;
-    private static final Gson GSON = new Gson();
 
     private final String baseUri;
 
     private final UserCredentialManager credentialManager;
 
-    private final LocalDate firstDay;
-
     private ActivityService activityService;
 
     public FitbitCacheController(@Autowired UserCredentialManager userCredentialManager,
                                  @Value("${baseUri}") String baseUri,
-                                 @Value("${activity.date.start}") String firstDay,
                                  @Autowired ActivityService activityService) {
         this.credentialManager = userCredentialManager;
         this.baseUri = baseUri;
-        this.firstDay = LocalDate.parse(firstDay);
         this.activityService = activityService;
     }
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     @ResponseBody
     public RateLimitStatus fitbitStatus() throws IOException {
-        RateLimitStatusRepositoryFitbit repo = new RateLimitStatusRepositoryFitbit(credentialManager.getRequestFactoryForMe());
+        RateLimitStatusRepo repo = new RateLimitStatusRepo(credentialManager.getRequestFactoryForMe());
 
         return repo.getRateLimitStatus();
     }
 
     @RequestMapping(value = "/callback", method = RequestMethod.GET)
-    public String fitbitAuthCallback(@RequestParam("code") String code,
-                                     HttpServletRequest request) throws IOException {
+    public RedirectView fitbitAuthCallback(@RequestParam("code") String code,
+                                           HttpServletRequest request) throws IOException {
         credentialManager.addVerifiedUser("me", code);
-        return "redirect:/health/fitbit/status";
+
+        return new RedirectView("/health/fitbit/status");
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String fitbitLogin() throws IOException {
+    public RedirectView fitbitLogin() throws IOException {
         String redirect = FitbitApi.AUTHORIZE_URL
                 + "?response_type=code"
                 + "&client_id=" + credentialManager.getClientCredentials().getId()
                 + "&scope=" + SCOPE
                 + "&expires_in=" + EXPIRATION_TIME;
-        return "redirect:" + redirect;
+        return new RedirectView(redirect);
     }
 
     @RequestMapping(value = "/cache")
@@ -83,7 +88,7 @@ public class FitbitCacheController {
         return () -> {cacheFitbitData(); return null;};
     }
 
-    @Scheduled(fixedRate = 1000 * 60 * 60, initialDelay = 0)
+    @Scheduled(fixedRate = HOURLY, initialDelay = IMMEDIATE)
     public void cacheFitbitData() throws IOException, DaoException {
 
         logger.info("refreshing cache");
@@ -92,12 +97,17 @@ public class FitbitCacheController {
         credentialManager.getCredentialsForUser("me").refreshToken();
         logger.info("refreshed token");
 
-        FitbitIntradayActivityRepo intradayActivityDao = new FitbitIntradayActivityRepo(
-                credentialManager.getRequestFactoryForMe());
+        HttpRequestFactory requestFactory = credentialManager.getRequestFactoryForMe();
+
+        FitbitUserRepo userRepo = new FitbitUserRepo(requestFactory);
+
+        LocalDate firstDate = userRepo.getAuthorisedUser().getMemberSince();
+
+        FitbitIntradayActivityRepo intradayActivityDao = new FitbitIntradayActivityRepo(requestFactory);
 
         DayActivityFitbitToEntity transformer = new DayActivityFitbitToEntity();
 
-        for(LocalDate date : new LocalDateRange(firstDay, LocalDate.now())) {
+        for(LocalDate date : new LocalDateRange(firstDate, LocalDate.now())) {
             if(!activityService.hasCompleteEntry(date)) {
                 logger.info("getting activity from fitbit for " + date.toString());
                 FitbitIntradayActivity activity = intradayActivityDao.getDayActivity(date);

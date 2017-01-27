@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.fitbit;
+package uk.co.ticklethepanda.health.activity.fitbit.activity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -10,7 +10,6 @@ import java.util.List;
 
 public class FitbitIntradayActivity implements Iterable<FitbitMinuteActivity> {
 
-    private static final int MINUTES_IN_A_DAY = 60 * 24;
     @SerializedName("activities-steps")
     @Expose
     private final List<DateStatistics> dayStatistics = new ArrayList<>();
@@ -34,37 +33,38 @@ public class FitbitIntradayActivity implements Iterable<FitbitMinuteActivity> {
         return this.intradayMinuteActivitySeries;
     }
 
-    public Double getTotalSteps() {
-        return this.intradayMinuteActivitySeries.getTotalSteps();
-    }
-
-    public boolean isFullDay() {
-        return this.intradayMinuteActivitySeries.getElements().size() == MINUTES_IN_A_DAY;
-    }
-
     @Override
     public Iterator<FitbitMinuteActivity> iterator() {
         return this.intradayMinuteActivitySeries.iterator();
+    }
+
+    @Override
+    public String toString() {
+        return "FitbitIntradayActivity{" +
+                "dayStatistics=" + dayStatistics.toString() +
+                ", intradayMinuteActivitySeries=" + intradayMinuteActivitySeries.toString() +
+                '}';
     }
 
     private static class DateStatistics {
 
         @SerializedName("dateTime")
         @Expose
-        private String dateTime;
-
-        private transient LocalDate date;
+        private LocalDate date;
 
         public DateStatistics(LocalDate date) {
             this.date = date;
         }
 
         public LocalDate getDate() {
-            if (this.date == null) {
-                this.date = LocalDate.parse(this.dateTime);
-            }
             return this.date;
         }
 
+        @Override
+        public String toString() {
+            return "DateStatistics{" +
+                    "date=" + date.toString() +
+                    '}';
+        }
     }
 }
