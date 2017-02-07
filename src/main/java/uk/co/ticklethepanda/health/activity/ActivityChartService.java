@@ -238,4 +238,11 @@ public class ActivityChartService {
 
         return dayImageSinceLastMonth;
     }
+
+    public byte[] getAverageDayImageBetweenDates(LocalDate startDate, LocalDate endDate) throws IOException {
+        log.info("caching activity by recent");
+        List<MinuteActivity> activities = activityService.getAverageDayForRange(startDate, endDate);
+
+        return PngToByteArray.convert(createChart(activities));
+    }
 }

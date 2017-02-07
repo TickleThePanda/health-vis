@@ -12,7 +12,6 @@ public class AveragedWeight {
     private final Double average;
     private final LocalDate date;
 
-
     /**
      *
      * @param weight

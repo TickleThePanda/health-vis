@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static uk.co.ticklethepanda.health.weight.AveragedWeight.calculateAverageWeighs;
+
 @Service
 public class WeightChartService {
 
@@ -53,12 +55,49 @@ public class WeightChartService {
         return recentWeightChart;
     }
 
+    public byte[] getChartBetweenDates(LocalDate start, LocalDate end) throws IOException {
+        LOG.info("caching weight chart");
+
+        List<AveragedWeight> weights = calculateAverageWeighs(weightService.getAllWeightWithEntries())
+                .stream()
+                .filter(w ->
+                        (start == null || w.getDate().isAfter(start))
+                            && (end == null || w.getDate().isBefore(end)))
+                .collect(Collectors.toList());
+
+        BufferedImage bufferedImage = createChart(weights);
+
+
+        return PngToByteArray.convert(bufferedImage);
+    }
+
+    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    public void cacheRecentWeightChart() throws IOException {
+        LOG.info("caching recent weight chart");
+        LocalDate aMonthAgo = LocalDate.now().minusDays(30);
+
+        List<AveragedWeight> weights = calculateAverageWeighs(weightService.getAllWeightWithEntries())
+                .stream()
+                .filter(w -> w.getDate().isAfter(aMonthAgo))
+                .collect(Collectors.toList());
+
+        BufferedImage bufferedImage = createChart(weights);
+
+        this.recentWeightChart = PngToByteArray.convert(bufferedImage);
+    }
 
     @Scheduled(fixedRate = 1000*60, initialDelay = 1)
     public void cacheWeightChart() throws IOException {
         LOG.info("caching weight chart");
-        List<AveragedWeight> weights = AveragedWeight.calculateAverageWeighs(weightService.getAllWeightWithEntries());
 
+        BufferedImage bufferedImage = createChart(
+                calculateAverageWeighs(weightService.getAllWeightWithEntries()));
+
+
+        this.weightChart = PngToByteArray.convert(bufferedImage);
+    }
+
+    private BufferedImage createChart(List<AveragedWeight> weights) {
         List<Double> yData = weights.stream()
                 .map(w -> w.getAverage())
                 .collect(Collectors.toList());
@@ -93,58 +132,7 @@ public class WeightChartService {
         BufferedImage bufferedImage = new BufferedImage(chart.getWidth(), chart.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
         chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
-
-
-        this.weightChart = PngToByteArray.convert(bufferedImage);
+        return bufferedImage;
     }
 
-
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
-    public void cacheRecentWeightChart() throws IOException {
-        LOG.info("caching recent weight chart");
-        LocalDate aMonthAgo = LocalDate.now().minusDays(30);
-
-        List<AveragedWeight> weights = AveragedWeight.calculateAverageWeighs(weightService.getAllWeightWithEntries())
-                .stream()
-                .filter(w -> w.getDate().isAfter(aMonthAgo))
-                .collect(Collectors.toList());
-
-        List<Double> yData = weights.stream()
-                .map(w -> w.getAverage())
-                .collect(Collectors.toList());
-
-        List<Date> xData = weights.stream()
-                .map(w -> Date.from(w.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant()))
-                .collect(Collectors.toList());
-
-        XYChart chart = new XYChartBuilder()
-                .width(1000)
-                .height(500)
-                .xAxisTitle("Date")
-                .yAxisTitle("Weight (kg)")
-                .theme(Styler.ChartTheme.GGPlot2)
-                .build();
-
-        Font font = chart.getStyler().getAxisTickLabelsFont();
-
-        chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Scatter);
-        chart.getStyler().setLegendVisible(false);
-        chart.getStyler().setAxisTickLabelsFont(font.deriveFont(
-                Collections.singletonMap(
-                        TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
-        chart.getStyler().setDatePattern("YYYY-MM-dd");
-        chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
-        chart.getStyler().setMarkerSize(8);
-
-        XYSeries series = chart.addSeries("data", xData, yData);
-
-        series.setMarker(SeriesMarkers.CIRCLE);
-
-        BufferedImage bufferedImage = new BufferedImage(chart.getWidth(), chart.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics2D = bufferedImage.createGraphics();
-        chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
-
-
-        this.recentWeightChart = PngToByteArray.convert(bufferedImage);
-    }
 }

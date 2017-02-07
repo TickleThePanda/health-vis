@@ -3,8 +3,11 @@ package uk.co.ticklethepanda.health.activity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import uk.co.ticklethepanda.health.activity.dto.DayActivityDto;
 import uk.co.ticklethepanda.health.activity.dto.transformers.DayActivityEntityToDto;
@@ -14,7 +17,9 @@ import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.io.IOException;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.Month;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -71,8 +76,40 @@ public class ActivityController {
 
     @RequestMapping(params = {"img"}, produces = "image/png")
     @ResponseBody
-    public byte[] getAverageDayImage() throws IOException {
-        return activityChartService.getAverageDayImage();
+    public byte[] getAverageDayImage(
+            @RequestParam(value = "after", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                    LocalDate startDate,
+            @RequestParam(value = "before", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                    LocalDate endDate) throws IOException {
+        if(startDate == null && endDate == null) {
+            return activityChartService.getAverageDayImage();
+        }
+
+        checkPermissionForRange(startDate, endDate);
+
+        return activityChartService.getAverageDayImageBetweenDates(startDate, endDate);
+    }
+
+    private void checkPermissionForRange(LocalDate startDate, LocalDate endDate) {
+        final int MIN_NUMBER_OF_DAYS_APART = 30;
+
+        if(startDate != null && endDate != null) {
+            if(ChronoUnit.DAYS.between(startDate, endDate) < MIN_NUMBER_OF_DAYS_APART) {
+                throw new AccessDeniedException("Specify dates (before and after) that are more than a month apart.");
+            }
+        }
+        if(endDate == null && startDate != null) {
+            if(ChronoUnit.DAYS.between(startDate, LocalDate.now()) < MIN_NUMBER_OF_DAYS_APART) {
+                throw new AccessDeniedException("Specify a start date (after) that is more than a month earlier than now.");
+            }
+        }
+        if(startDate == null && endDate != null) {
+            if(ChronoUnit.DAYS.between(activityService.getFirstDate(), endDate) < MIN_NUMBER_OF_DAYS_APART) {
+                throw new AccessDeniedException("Specify an end date (before) that is more than a month later than the first entry");
+            }
+        }
     }
 
     @RequestMapping(params = {"img", "recent"}, produces = "image/png")

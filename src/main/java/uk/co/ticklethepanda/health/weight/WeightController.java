@@ -44,8 +44,20 @@ public class WeightController {
 
     @RequestMapping(method = RequestMethod.GET, params = {"img"}, produces = "image/png")
     @ResponseBody
-    public byte[] getWeightChart() throws IOException {
-        return weightChartService.getWeightChart();
+    public byte[] getWeightChart(
+            @RequestParam(value = "after", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                    LocalDate startDate,
+            @RequestParam(value = "before", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                    LocalDate endDate)
+            throws IOException {
+
+        if(startDate == null && endDate == null) {
+            return weightChartService.getWeightChart();
+        }
+
+        return weightChartService.getChartBetweenDates(startDate, endDate);
     }
 
     @RequestMapping(value = "/{date}/{period}",
