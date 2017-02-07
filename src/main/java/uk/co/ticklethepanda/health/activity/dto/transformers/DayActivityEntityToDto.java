@@ -2,7 +2,7 @@ package uk.co.ticklethepanda.health.activity.dto.transformers;
 
 import uk.co.ticklethepanda.health.activity.dto.DayActivityDto;
 import uk.co.ticklethepanda.health.activity.dto.MinuteActivityDto;
-import uk.co.ticklethepanda.health.activity.local.MinuteActivity;
+import uk.co.ticklethepanda.health.activity.stored.MinuteActivity;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.time.LocalDate;

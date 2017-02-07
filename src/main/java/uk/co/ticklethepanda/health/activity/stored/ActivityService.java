@@ -1,9 +1,10 @@
-package uk.co.ticklethepanda.health.activity.local;
+package uk.co.ticklethepanda.health.activity.stored;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.temporal.Temporal;
 import java.util.*;
 
 /**
@@ -175,4 +177,15 @@ public class ActivityService {
     }
 
 
+    public List<MinuteActivity> getAverageDayForRange(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> entries = entityManager.createNamedQuery("getAverageDayBetweenDates", Object[].class)
+                .setParameter("start", startDate)
+                .setParameter("end", endDate)
+                .getResultList();
+        return convertResultsForAverageDay(entries);
+    }
+
+    public LocalDate getFirstDate() {
+        return entityManager.createNamedQuery("getEarliestDateOfActivity", LocalDate.class).getSingleResult();
+    }
 }

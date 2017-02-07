@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.local;
+package uk.co.ticklethepanda.health.activity.stored;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NamedQueries;
@@ -38,6 +38,14 @@ import static java.util.stream.Collectors.toList;
                         + " where activity.date > :date and " + MinuteActivity.DATE_HAS_STEPS
                         + " group by activity.time"
                         + " order by activity.time"),
+        @NamedQuery(name = "getAverageDayBetweenDates",
+                query = "select activity.time, avg(activity.steps)"
+                        + " from MinuteActivity as activity"
+                        + " where (:start is null or activity.date > :start)"
+                            + " and (:end is null or activity.date < :end)"
+                            + " and " + MinuteActivity.DATE_HAS_STEPS
+                        + " group by activity.time"
+                        + " order by activity.time"),
         @NamedQuery(name = "getAverageDayByWeekday",
                 query = "select weekday(activity.date), activity.time, avg(activity.steps)"
                         + " from MinuteActivity as activity"
@@ -49,7 +57,9 @@ import static java.util.stream.Collectors.toList;
                         + " from MinuteActivity as activity"
                         + " where " + MinuteActivity.DATE_HAS_STEPS
                         + " group by month(activity.date), activity.time"
-                        + " order by month(activity.date), activity.time")
+                        + " order by month(activity.date), activity.time"),
+        @NamedQuery(name = "getEarliestDateOfActivity",
+                query = "select min(activity.date) from MinuteActivity as activity")
 
 })
 public class MinuteActivity {
