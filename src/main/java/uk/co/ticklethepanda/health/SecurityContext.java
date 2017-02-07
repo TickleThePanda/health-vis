@@ -11,15 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Configuration
-public class AppConfig extends WebSecurityConfigurerAdapter {
+public class SecurityContext extends WebSecurityConfigurerAdapter {
 
     @Value("${security.basic.user.name}")
     String userName;
