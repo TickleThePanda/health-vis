@@ -26,8 +26,11 @@ public class WeightService {
 
     private static final Logger LOG = LogManager.getLogger();
 
-    @Autowired
     private EntityManager entityManager;
+
+    public WeightService(@Autowired EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     public void createWeightEntry(Weight weight) {
         LOG.info("{} {} {}", weight.getDate(), weight.getWeightAm(), weight.getWeightPm());
