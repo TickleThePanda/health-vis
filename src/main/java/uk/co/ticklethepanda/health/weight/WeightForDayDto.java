@@ -2,14 +2,11 @@ package uk.co.ticklethepanda.health.weight;
 
 import java.time.LocalDate;
 
-/**
- *
- */
 public class WeightForDayDto {
 
-    public Double weightPm;
     public LocalDate date;
     public Double weightAm;
+    public Double weightPm;
 
     public WeightForDayDto(LocalDate date, Double weightAm, Double weightPm) {
         this.date = date;
