@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
-import uk.co.ticklethepanda.health.activity.fitbit.*;
+import uk.co.ticklethepanda.health.activity.fitbit.DaoException;
+import uk.co.ticklethepanda.health.activity.fitbit.FitbitApi;
+import uk.co.ticklethepanda.health.activity.fitbit.UserCredentialManager;
 import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivity;
 import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivityRepo;
 import uk.co.ticklethepanda.health.activity.fitbit.ratelimit.RateLimitStatus;
@@ -85,7 +87,10 @@ public class FitbitCacheController {
 
     @RequestMapping(value = "/cache")
     public Callable<Void> triggerCacheCheck() throws IOException, DaoException {
-        return () -> {cacheFitbitData(); return null;};
+        return () -> {
+            cacheFitbitData();
+            return null;
+        };
     }
 
     @Scheduled(fixedRate = HOURLY, initialDelay = IMMEDIATE)
@@ -107,8 +112,8 @@ public class FitbitCacheController {
 
         DayActivityFitbitToEntity transformer = new DayActivityFitbitToEntity();
 
-        for(LocalDate date : new LocalDateRange(firstDate, LocalDate.now())) {
-            if(!activityService.hasCompleteEntry(date)) {
+        for (LocalDate date : new LocalDateRange(firstDate, LocalDate.now())) {
+            if (!activityService.hasCompleteEntry(date)) {
                 logger.info("getting activity from fitbit for " + date.toString());
                 FitbitIntradayActivity activity = intradayActivityDao.getDayActivity(date);
                 logger.info("replacing activity for " + date.toString());
@@ -116,7 +121,8 @@ public class FitbitCacheController {
             } else {
                 logger.info("skipping activity fitbit for " + date.toString() + " - already up to date");
             }
-        };
+        }
+        ;
         logger.info("refreshed cache");
     }
 

@@ -1,7 +1,6 @@
 package uk.co.ticklethepanda.health.weight;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,17 +12,16 @@ public class AveragedWeight {
     private final LocalDate date;
 
     /**
-     *
      * @param weight
-     * @param diff The average difference between the afternoon and the morning.
+     * @param diff   The average difference between the afternoon and the morning.
      */
     public AveragedWeight(Weight weight, Double diff) {
         this.date = weight.getDate();
-        if(weight.getWeightAm() != null && weight.getWeightPm() != null) {
+        if (weight.getWeightAm() != null && weight.getWeightPm() != null) {
             this.average = (weight.getWeightAm() + weight.getWeightPm()) / 2.0;
-        } else if(weight.getWeightAm() != null  && weight.getWeightPm() == null) {
+        } else if (weight.getWeightAm() != null && weight.getWeightPm() == null) {
             this.average = (weight.getWeightAm() * 2 + diff) / 2.0;
-        } else if(weight.getWeightAm() == null && weight.getWeightPm() != null) {
+        } else if (weight.getWeightAm() == null && weight.getWeightPm() != null) {
             this.average = (weight.getWeightPm() * 2 - diff) / 2.0;
         } else {
             this.average = null;

@@ -83,7 +83,7 @@ public class ActivityController {
             @RequestParam(value = "before", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                     LocalDate endDate) throws IOException {
-        if(startDate == null && endDate == null) {
+        if (startDate == null && endDate == null) {
             return activityChartService.getAverageDayImage();
         }
 
@@ -95,18 +95,18 @@ public class ActivityController {
     private void checkPermissionForRange(LocalDate startDate, LocalDate endDate) {
         final int MIN_NUMBER_OF_DAYS_APART = 30;
 
-        if(startDate != null && endDate != null) {
-            if(ChronoUnit.DAYS.between(startDate, endDate) < MIN_NUMBER_OF_DAYS_APART) {
+        if (startDate != null && endDate != null) {
+            if (ChronoUnit.DAYS.between(startDate, endDate) < MIN_NUMBER_OF_DAYS_APART) {
                 throw new AccessDeniedException("Specify dates (before and after) that are more than a month apart.");
             }
         }
-        if(endDate == null && startDate != null) {
-            if(ChronoUnit.DAYS.between(startDate, LocalDate.now()) < MIN_NUMBER_OF_DAYS_APART) {
+        if (endDate == null && startDate != null) {
+            if (ChronoUnit.DAYS.between(startDate, LocalDate.now()) < MIN_NUMBER_OF_DAYS_APART) {
                 throw new AccessDeniedException("Specify a start date (after) that is more than a month earlier than now.");
             }
         }
-        if(startDate == null && endDate != null) {
-            if(ChronoUnit.DAYS.between(activityService.getFirstDate(), endDate) < MIN_NUMBER_OF_DAYS_APART) {
+        if (startDate == null && endDate != null) {
+            if (ChronoUnit.DAYS.between(activityService.getFirstDate(), endDate) < MIN_NUMBER_OF_DAYS_APART) {
                 throw new AccessDeniedException("Specify an end date (before) that is more than a month later than the first entry");
             }
         }

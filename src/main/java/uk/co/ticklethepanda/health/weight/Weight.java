@@ -1,12 +1,10 @@
 package uk.co.ticklethepanda.health.weight;
 
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
 
 import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.time.LocalDate;
 
 @Entity
@@ -27,7 +25,7 @@ public class Weight {
 
     @Id
     @GeneratedValue(generator = "increment")
-    @GenericGenerator(name="increment", strategy = "increment")
+    @GenericGenerator(name = "increment", strategy = "increment")
     @Column(name = "WEIGHT_ID", updatable = false, nullable = false)
     private long id;
 
@@ -38,7 +36,8 @@ public class Weight {
     @Column(name = "WEIGHT_PM")
     private Double weightPm;
 
-    public Weight() {}
+    public Weight() {
+    }
 
     public Weight(LocalDate localDate, Double weightAm, Double weightPm) {
         this.date = localDate;
@@ -50,6 +49,7 @@ public class Weight {
     public void setId(long id) {
         this.id = id;
     }
+
     public long getId() {
         return id;
     }

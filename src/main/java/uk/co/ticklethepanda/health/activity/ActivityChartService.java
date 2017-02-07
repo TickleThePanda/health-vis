@@ -45,7 +45,7 @@ public class ActivityChartService {
         this.activityService = activityService;
     }
 
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheDayImage() throws IOException {
         log.info("caching activity chart");
 
@@ -58,7 +58,7 @@ public class ActivityChartService {
         log.info("cached activity chart");
     }
 
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheDayByRecent() throws IOException {
         log.info("caching activity by recent");
         List<MinuteActivity> activities = activityService.getAverageDaySinceDate(LocalDate.now().minus(30, ChronoUnit.DAYS));
@@ -67,7 +67,7 @@ public class ActivityChartService {
         log.info("cached activity by recent");
     }
 
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheDayByWeekdayImage() throws IOException {
         log.info("caching activity by weekday chart");
         Map<DayOfWeek, List<MinuteActivity>> entities = activityService.getAverageDayByWeekday();
@@ -76,7 +76,7 @@ public class ActivityChartService {
         log.info("caching activity by weekday chart");
     }
 
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheDayByMonthImage() throws IOException {
         log.info("caching activity by month chart");
         Map<Month, List<MinuteActivity>> entities = activityService.getAverageDayByMonth();
@@ -118,9 +118,9 @@ public class ActivityChartService {
                     .collect(Collectors.toList());
 
             String title;
-            if(entry.getKey() instanceof Month) {
+            if (entry.getKey() instanceof Month) {
                 title = ((Month) entry.getKey()).getDisplayName(TextStyle.FULL, Locale.UK);
-            } else if(entry.getKey() instanceof DayOfWeek) {
+            } else if (entry.getKey() instanceof DayOfWeek) {
                 title = ((DayOfWeek) entry.getKey()).getDisplayName(TextStyle.FULL, Locale.UK);
             } else {
                 title = entry.getKey().toString();
@@ -150,7 +150,7 @@ public class ActivityChartService {
             XYSeries series = chart.addSeries("data", xData, yData);
 
             series.setMarker(SeriesMarkers.NONE);
-            series.setLineColor(Color.getHSBColor((float)i/(float)entities.size(), 0.6f, 0.85f));
+            series.setLineColor(Color.getHSBColor((float) i / (float) entities.size(), 0.6f, 0.85f));
 
             BufferedImage individualImage = new BufferedImage(chartWidth, chartHeight + (last ? ChartConfig.AXIS_HEIGHT : 0), BufferedImage.TYPE_INT_RGB);
 
@@ -209,14 +209,14 @@ public class ActivityChartService {
 
 
     public byte[] getAverageDayByMonthImage() throws IOException {
-        if(dayByMonthImage == null) {
+        if (dayByMonthImage == null) {
             cacheDayByMonthImage();
         }
         return dayByMonthImage;
     }
 
     public byte[] getAverageDayByWeekdayImage() throws IOException {
-        if(dayByWeekdayImage == null) {
+        if (dayByWeekdayImage == null) {
             cacheDayByWeekdayImage();
         }
 
@@ -224,7 +224,7 @@ public class ActivityChartService {
     }
 
     public byte[] getAverageDayImage() throws IOException {
-        if(dayImage == null) {
+        if (dayImage == null) {
             cacheDayImage();
         }
 
@@ -232,7 +232,7 @@ public class ActivityChartService {
     }
 
     public byte[] getAverageDayImageForLastMonth() throws IOException {
-        if(dayImageSinceLastMonth == null) {
+        if (dayImageSinceLastMonth == null) {
             cacheDayByRecent();
         }
 

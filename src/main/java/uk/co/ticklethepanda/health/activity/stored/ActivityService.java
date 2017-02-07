@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
-import java.time.temporal.Temporal;
 import java.util.*;
 
 /**
@@ -65,7 +63,7 @@ public class ActivityService {
                 .getSingleResult()
                 .intValue();
 
-        if(countByDate == MINUTES_IN_A_DAY) {
+        if (countByDate == MINUTES_IN_A_DAY) {
             return true;
         } else {
             return false;
@@ -77,7 +75,7 @@ public class ActivityService {
         MinuteActivity currentActivity =
                 getActivityForTimeAndDate(newActivity.getDate(), newActivity.getTime());
 
-        if(currentActivity != null) {
+        if (currentActivity != null) {
             currentActivity.setSteps(newActivity.getSteps());
             entityManager.persist(currentActivity);
         } else {
@@ -103,7 +101,7 @@ public class ActivityService {
 
     private List<MinuteActivity> convertResultsForAverageDay(List<Object[]> entries) {
         List<MinuteActivity> minuteActivities = new ArrayList<>();
-        for(Object[] entry : entries) {
+        for (Object[] entry : entries) {
 
             LocalTime time = (LocalTime) entry[0];
             double steps = (double) entry[1];
@@ -124,14 +122,14 @@ public class ActivityService {
 
         Map<Month, List<MinuteActivity>> monthsToActvivites = new TreeMap<>();
 
-        for(Object[] entry : entries) {
+        for (Object[] entry : entries) {
             int monthNumber = (int) entry[0];
             Month month = Month.of(monthNumber);
 
             LocalTime time = (LocalTime) entry[1];
             double steps = (double) entry[2];
 
-            if(!monthsToActvivites.containsKey(month)) {
+            if (!monthsToActvivites.containsKey(month)) {
                 monthsToActvivites.put(month, new ArrayList<>());
             }
 
@@ -151,13 +149,13 @@ public class ActivityService {
 
         Map<DayOfWeek, List<MinuteActivity>> dayOfWeekToActivities = new TreeMap<>();
 
-        for(Object[] entry : entries) {
+        for (Object[] entry : entries) {
             int dayOfWeekNumber = (int) entry[0];
             DayOfWeek dayOfWeek = DayOfWeek.of(dayOfWeekNumber + 1);
             LocalTime time = (LocalTime) entry[1];
             double steps = (double) entry[2];
 
-            if(!dayOfWeekToActivities.containsKey(dayOfWeek)) {
+            if (!dayOfWeekToActivities.containsKey(dayOfWeek)) {
                 dayOfWeekToActivities.put(dayOfWeek, new ArrayList<>());
             }
 
@@ -171,7 +169,7 @@ public class ActivityService {
     }
 
     public void replaceActivities(Collection<MinuteActivity> newActivity) {
-        for(MinuteActivity minuteActivity : newActivity) {
+        for (MinuteActivity minuteActivity : newActivity) {
             replaceActivity(minuteActivity);
         }
     }

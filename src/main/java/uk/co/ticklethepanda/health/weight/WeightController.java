@@ -53,7 +53,7 @@ public class WeightController {
                     LocalDate endDate)
             throws IOException {
 
-        if(startDate == null && endDate == null) {
+        if (startDate == null && endDate == null) {
             return weightChartService.getWeightChart();
         }
 

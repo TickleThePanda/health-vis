@@ -42,8 +42,8 @@ import static java.util.stream.Collectors.toList;
                 query = "select activity.time, avg(activity.steps)"
                         + " from MinuteActivity as activity"
                         + " where (:start is null or activity.date > :start)"
-                            + " and (:end is null or activity.date < :end)"
-                            + " and " + MinuteActivity.DATE_HAS_STEPS
+                        + " and (:end is null or activity.date < :end)"
+                        + " and " + MinuteActivity.DATE_HAS_STEPS
                         + " group by activity.time"
                         + " order by activity.time"),
         @NamedQuery(name = "getAverageDayByWeekday",
@@ -70,7 +70,7 @@ public class MinuteActivity {
             " group by activity.date having sum(activity.steps) > 0)";
     @Id
     @GeneratedValue(generator = "increment")
-    @GenericGenerator(name="increment", strategy = "increment")
+    @GenericGenerator(name = "increment", strategy = "increment")
     @Column(name = "MINUTE_ACTIVITY_ID", updatable = false, nullable = false)
     private long id;
 

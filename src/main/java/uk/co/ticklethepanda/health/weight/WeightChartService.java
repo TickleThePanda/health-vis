@@ -37,10 +37,11 @@ public class WeightChartService {
 
     public WeightChartService(@Autowired WeightService weightService) {
         this.weightService = weightService;
-        
+
     }
+
     public byte[] getWeightChart() throws IOException {
-        if(weightChart == null) {
+        if (weightChart == null) {
             cacheWeightChart();
         }
 
@@ -48,7 +49,7 @@ public class WeightChartService {
     }
 
     public byte[] getRecentWeightChart() throws IOException {
-        if(recentWeightChart == null) {
+        if (recentWeightChart == null) {
             cacheRecentWeightChart();
         }
 
@@ -62,7 +63,7 @@ public class WeightChartService {
                 .stream()
                 .filter(w ->
                         (start == null || w.getDate().isAfter(start))
-                            && (end == null || w.getDate().isBefore(end)))
+                                && (end == null || w.getDate().isBefore(end)))
                 .collect(Collectors.toList());
 
         BufferedImage bufferedImage = createChart(weights);
@@ -71,7 +72,7 @@ public class WeightChartService {
         return PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheRecentWeightChart() throws IOException {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
@@ -86,7 +87,7 @@ public class WeightChartService {
         this.recentWeightChart = PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = 1000*60, initialDelay = 1)
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheWeightChart() throws IOException {
         LOG.info("caching weight chart");
 
