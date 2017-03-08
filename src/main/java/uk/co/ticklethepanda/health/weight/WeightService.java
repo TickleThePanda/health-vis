@@ -4,69 +4,38 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
-@Transactional
 public class WeightService {
 
     private static final Logger LOG = LogManager.getLogger();
 
-    private EntityManager entityManager;
+    private WeightRepo weightRepo;
 
-    public WeightService(@Autowired EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    public void createWeightEntry(Weight weight) {
-        LOG.info("{} {} {}", weight.getDate(), weight.getWeightAm(), weight.getWeightPm());
-
-        List<Weight> oldWeightItems = entityManager.createNamedQuery("weight.findByDate", Weight.class)
-                .setParameter("date", weight.getDate())
-                .getResultList();
-
-        LOG.debug("Results: {}", () -> oldWeightItems.toString());
-
-        if (oldWeightItems.size() == 0) {
-            entityManager.persist(weight);
-        } else {
-            assert oldWeightItems.size() == 1;
-            Weight oldWeightEntry = oldWeightItems.get(0);
-            oldWeightEntry.setWeightAm(weight.getWeightAm());
-            oldWeightEntry.setWeightPm(weight.getWeightPm());
-            entityManager.merge(oldWeightEntry);
-        }
+    public WeightService(@Autowired WeightRepo weightRepo) {
+        this.weightRepo = weightRepo;
     }
 
     public List<Weight> getAllWeight() {
-        return entityManager.createNamedQuery("weight.findAll", Weight.class).getResultList();
+        return weightRepo.findAll();
     }
 
     public List<Weight> getAllWeightWithEntries() {
-        return entityManager.createNamedQuery("weight.findWithEntries", Weight.class).getResultList();
+        return weightRepo.findWhereNotEmpty();
     }
 
     public Weight getWeightForDate(LocalDate date) {
-        List<Weight> results = entityManager
-                .createNamedQuery("weight.findByDate", Weight.class)
-                .setParameter("date", date)
-                .getResultList();
-        if (!results.isEmpty()) {
-            return results.get(0);
-        } else {
-            return null;
-        }
+        return weightRepo.findByDate(date);
     }
 
     public Weight createWeightEntryForPeriod(LocalDate date, EntryPeriod entryPeriod, Double weightValue) {
-        Weight weight = this.getWeightForDate(date);
+        Weight weight = weightRepo.findByDate(date);
         if (weight == null) {
             weight = new Weight(date, null, null);
-            entityManager.persist(weight);
         }
 
         switch (entryPeriod) {
@@ -75,9 +44,13 @@ public class WeightService {
                 break;
             case PM:
                 weight.setWeightPm(weightValue);
+                break;
+            default:
+                throw new InvalidParameterException();
         }
 
-        entityManager.merge(weight);
+        weightRepo.save(weight);
+
         return weight;
     }
 }

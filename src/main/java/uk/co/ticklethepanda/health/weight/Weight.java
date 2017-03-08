@@ -1,8 +1,6 @@
 package uk.co.ticklethepanda.health.weight;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -10,24 +8,13 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "WEIGHT",
         uniqueConstraints = @UniqueConstraint(columnNames = {"DATE"}))
-@NamedQueries({
-        @NamedQuery(name = "weight.findByDate",
-                query = "from Weight as weight " +
-                        "where weight.date = :date"),
-        @NamedQuery(name = "weight.findAll",
-                query = "from Weight as weight"),
-        @NamedQuery(name = "weight.findWithEntries",
-                query = "from Weight as weight" +
-                        " where weight.weightAm is not null" +
-                        " or weight.weightPm is not null")
-})
 public class Weight {
 
     @Id
     @GeneratedValue(generator = "increment")
     @GenericGenerator(name = "increment", strategy = "increment")
     @Column(name = "WEIGHT_ID", updatable = false, nullable = false)
-    private long id;
+    private Long id;
 
     @Column(name = "DATE", updatable = false, nullable = false)
     private LocalDate date;
@@ -50,7 +37,7 @@ public class Weight {
         this.id = id;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
