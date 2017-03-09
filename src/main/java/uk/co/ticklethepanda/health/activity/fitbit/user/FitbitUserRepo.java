@@ -6,6 +6,9 @@ import com.google.api.client.http.HttpResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import uk.co.ticklethepanda.health.activity.fitbit.DaoException;
 import uk.co.ticklethepanda.health.activity.fitbit.FitbitApi;
 
@@ -14,6 +17,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class FitbitUserRepo {
+    private static final Logger logger = LogManager.getLogger();
+
     private static final String FITBIT_USER_URL = FitbitApi.BASE_URL
             + "/user/-/profile.json";
     private final HttpRequestFactory requestFactory;
@@ -35,7 +40,14 @@ public class FitbitUserRepo {
 
         try {
             final HttpResponse response = this.requestFactory.buildGetRequest(url).execute();
-            return GSON.fromJson(response.parseAsString(), FitbitUser.class);
+
+            String responseText = response.parseAsString();
+
+            logger.debug("Retrieved response {}", responseText);
+
+            JsonObject rootElement = GSON.fromJson(responseText, JsonObject.class);
+
+            return GSON.fromJson(rootElement.get("user"), FitbitUser.class);
 
         } catch (final IOException e) {
             throw new DaoException(e);
