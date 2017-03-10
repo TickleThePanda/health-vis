@@ -1,1 +1,1 @@
-# fitbit-intraday-visualiser [![Build Status](https://travis-ci.org/TickleThePanda/fitbit-intraday-visualiser.svg?branch=master)](https://travis-ci.org/TickleThePanda/fitbit-intraday-visualiser)
+# health-vis [![Build Status](https://travis-ci.org/TickleThePanda/health-vis.svg?branch=master)](https://travis-ci.org/TickleThePanda/health-vis)
