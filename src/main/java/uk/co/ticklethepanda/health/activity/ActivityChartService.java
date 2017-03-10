@@ -61,7 +61,9 @@ public class ActivityChartService {
     @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheDayByRecent() throws IOException {
         log.info("caching activity by recent");
-        List<MinuteActivity> activities = activityService.getAverageDaySinceDate(LocalDate.now().minus(30, ChronoUnit.DAYS));
+        List<MinuteActivity> activities = activityService.getAverageDayForRange(
+                LocalDate.now().minus(30, ChronoUnit.DAYS),
+                null);
 
         this.dayImageSinceLastMonth = PngToByteArray.convert(createChart(activities));
         log.info("cached activity by recent");
