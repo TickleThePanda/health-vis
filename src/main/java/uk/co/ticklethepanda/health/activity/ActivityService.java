@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.stored;
+package uk.co.ticklethepanda.health.activity;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

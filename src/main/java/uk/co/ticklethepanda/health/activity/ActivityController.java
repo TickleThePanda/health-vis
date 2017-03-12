@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import uk.co.ticklethepanda.health.activity.dto.DayActivityDto;
 import uk.co.ticklethepanda.health.activity.dto.transformers.DayActivityEntityToDto;
-import uk.co.ticklethepanda.health.activity.stored.ActivityService;
-import uk.co.ticklethepanda.health.activity.stored.MinuteActivity;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.io.IOException;

@@ -21,8 +21,7 @@ import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivi
 import uk.co.ticklethepanda.health.activity.fitbit.ratelimit.RateLimitStatus;
 import uk.co.ticklethepanda.health.activity.fitbit.ratelimit.RateLimitStatusRepo;
 import uk.co.ticklethepanda.health.activity.fitbit.user.FitbitUserRepo;
-import uk.co.ticklethepanda.health.activity.stored.ActivityService;
-import uk.co.ticklethepanda.health.activity.stored.transformers.DayActivityFitbitToEntity;
+import uk.co.ticklethepanda.health.activity.transformers.DayActivityFitbitToEntity;
 import uk.co.ticklethepanda.utility.date.LocalDateRange;
 
 import java.io.IOException;

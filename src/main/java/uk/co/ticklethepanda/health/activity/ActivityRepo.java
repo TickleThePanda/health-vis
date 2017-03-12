@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.stored;
+package uk.co.ticklethepanda.health.activity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -58,7 +58,7 @@ public interface ActivityRepo extends JpaRepository<MinuteActivity, Long> {
      * {@code weekday(activity.date) + 1}:
      *  weekday is 0-6 from database but 1-7 in {@code java.time}.
      */
-    @Query("select new uk.co.ticklethepanda.health.activity.stored.MinuteActivityByWeekday("
+    @Query("select new uk.co.ticklethepanda.health.activity.MinuteActivityByWeekday("
             + "weekday(activity.date) + 1, activity.time, avg(activity.steps))"
             + " from MinuteActivity as activity"
             + " where " + DATE_HAS_STEPS
@@ -66,7 +66,7 @@ public interface ActivityRepo extends JpaRepository<MinuteActivity, Long> {
             + " order by weekday(activity.date), activity.time")
     List<MinuteActivityFacet<DayOfWeek>> getAverageDayByWeekday();
 
-    @Query("select new uk.co.ticklethepanda.health.activity.stored.MinuteActivityByMonth(" +
+    @Query("select new uk.co.ticklethepanda.health.activity.MinuteActivityByMonth(" +
             "month(activity.date), activity.time, avg(activity.steps))"
             + " from MinuteActivity as activity"
             + " where " + DATE_HAS_STEPS

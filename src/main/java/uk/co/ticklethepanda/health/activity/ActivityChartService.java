@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import uk.co.ticklethepanda.health.ChartConfig;
-import uk.co.ticklethepanda.health.activity.stored.ActivityService;
-import uk.co.ticklethepanda.health.activity.stored.MinuteActivity;
 import uk.co.ticklethepanda.utility.image.PngToByteArray;
 
 import java.awt.*;

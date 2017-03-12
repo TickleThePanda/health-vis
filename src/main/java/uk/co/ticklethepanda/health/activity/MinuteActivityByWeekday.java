@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.stored;
+package uk.co.ticklethepanda.health.activity;
 
 
 import java.time.DayOfWeek;
