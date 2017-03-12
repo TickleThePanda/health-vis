@@ -99,6 +99,11 @@ public class WeightChartService {
     }
 
     private BufferedImage createChart(List<AveragedWeight> weights) {
+        final int chartWidth = 1000;
+        final int chartHeight = 500;
+        final int minMarkerSize = 4;
+        final int markerSizeModifier = 8;
+
         List<Double> yData = weights.stream()
                 .map(w -> w.getAverage())
                 .collect(Collectors.toList());
@@ -108,8 +113,8 @@ public class WeightChartService {
                 .collect(Collectors.toList());
 
         XYChart chart = new XYChartBuilder()
-                .width(1000)
-                .height(500)
+                .width(chartWidth)
+                .height(chartHeight)
                 .xAxisTitle("Date")
                 .yAxisTitle("Weight (kg)")
                 .theme(Styler.ChartTheme.GGPlot2)
@@ -124,7 +129,12 @@ public class WeightChartService {
                         TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
         chart.getStyler().setDatePattern("YYYY-MM-dd");
         chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
-        chart.getStyler().setMarkerSize(4);
+
+        int markerSize = chartWidth / xData.size() / markerSizeModifier;
+        markerSize = Math.min(markerSize, 10);
+        markerSize = Math.max(markerSize, 4);
+        chart.getStyler().setMarkerSize(markerSize);
+
 
         XYSeries series = chart.addSeries("data", xData, yData);
 
