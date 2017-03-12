@@ -32,6 +32,25 @@ public class Weight {
         this.weightPm = weightPm;
     }
 
+    public boolean isFullDay() {
+        return weightAm != null && weightPm != null;
+    }
+
+    public boolean hasAmEntry() {
+        return weightAm != null;
+    }
+
+    public boolean hasPmEntry() {
+        return weightPm != null;
+    }
+
+    public boolean hasOnlyAmEntry() {
+        return hasAmEntry() && !hasPmEntry();
+    }
+
+    public boolean hasOnlyPmEntry() {
+        return !hasAmEntry() && hasPmEntry();
+    }
 
     public void setId(long id) {
         this.id = id;
@@ -73,5 +92,9 @@ public class Weight {
                 ", weightAm=" + weightAm +
                 ", weightPm=" + weightPm +
                 '}';
+    }
+
+    public Double getAverage() {
+        return (getWeightAm() + getWeightPm()) / 2.0;
     }
 }

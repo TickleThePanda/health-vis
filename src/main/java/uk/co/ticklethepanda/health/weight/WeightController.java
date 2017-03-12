@@ -42,6 +42,12 @@ public class WeightController {
         return weightChartService.getRecentWeightChart();
     }
 
+    @RequestMapping(method = RequestMethod.GET, params = {"img", "recent", "no-prediction"}, produces = "image/png")
+    @ResponseBody
+    public byte[] getRecentWeightChartWithNoPrediction() throws IOException {
+        return weightChartService.getRecentWeightChartWithNoPrediction();
+    }
+
     @RequestMapping(method = RequestMethod.GET, params = {"img"}, produces = "image/png")
     @ResponseBody
     public byte[] getWeightChart(

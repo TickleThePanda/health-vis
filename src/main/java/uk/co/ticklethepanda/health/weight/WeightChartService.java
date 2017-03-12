@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.co.ticklethepanda.health.weight.AveragedWeight.calculateAverageWeighs;
-
 @Service
 public class WeightChartService {
 
@@ -34,6 +32,7 @@ public class WeightChartService {
     private final WeightService weightService;
     private byte[] weightChart;
     private byte[] recentWeightChart;
+    private byte[] recentWeightChartWithNoPrediction;
 
     public WeightChartService(@Autowired WeightService weightService) {
         this.weightService = weightService;
@@ -56,10 +55,18 @@ public class WeightChartService {
         return recentWeightChart;
     }
 
+    public byte[] getRecentWeightChartWithNoPrediction() throws IOException {
+        if (recentWeightChartWithNoPrediction == null) {
+            cacheRecentWeightChartWithNoPrediction();
+        }
+
+        return recentWeightChartWithNoPrediction;
+    }
+
     public byte[] getChartBetweenDates(LocalDate start, LocalDate end) throws IOException {
         LOG.info("caching weight chart");
 
-        List<AveragedWeight> weights = calculateAverageWeighs(weightService.getAllWeightWithEntries())
+        List<PredictedWeight> weights = PredictedWeight.predictWeights(weightService.getAllWeightWithEntries())
                 .stream()
                 .filter(w ->
                         (start == null || w.getDate().isAfter(start))
@@ -77,7 +84,7 @@ public class WeightChartService {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
 
-        List<AveragedWeight> weights = calculateAverageWeighs(weightService.getAllWeightWithEntries())
+        List<PredictedWeight> weights = PredictedWeight.predictWeights((weightService.getAllWeightWithEntries()))
                 .stream()
                 .filter(w -> w.getDate().isAfter(aMonthAgo))
                 .collect(Collectors.toList());
@@ -88,24 +95,39 @@ public class WeightChartService {
     }
 
     @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
+    public void cacheRecentWeightChartWithNoPrediction() throws IOException {
+        LOG.info("caching recent weight chart");
+        LocalDate aMonthAgo = LocalDate.now().minusDays(30);
+
+        List<PredictedWeight> weights = PredictedWeight.calculateBasicAverage((weightService.getAllWeightWithEntries()))
+                .stream()
+                .filter(w -> w.getDate().isAfter(aMonthAgo))
+                .collect(Collectors.toList());
+
+        BufferedImage bufferedImage = createChart(weights);
+
+        this.recentWeightChartWithNoPrediction = PngToByteArray.convert(bufferedImage);
+    }
+
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
     public void cacheWeightChart() throws IOException {
         LOG.info("caching weight chart");
 
         BufferedImage bufferedImage = createChart(
-                calculateAverageWeighs(weightService.getAllWeightWithEntries()));
+                PredictedWeight.predictWeights(weightService.getAllWeightWithEntries()));
 
 
         this.weightChart = PngToByteArray.convert(bufferedImage);
     }
 
-    private BufferedImage createChart(List<AveragedWeight> weights) {
+    private BufferedImage createChart(List<PredictedWeight> weights) {
         final int chartWidth = 1000;
         final int chartHeight = 500;
         final int minMarkerSize = 4;
         final int markerSizeModifier = 8;
 
         List<Double> yData = weights.stream()
-                .map(w -> w.getAverage())
+                .map(w -> w.getValue())
                 .collect(Collectors.toList());
 
         List<Date> xData = weights.stream()
