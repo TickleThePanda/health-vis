@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ActivityChartService {
+public class ActivityAverageChartService {
 
     private static Logger log = LogManager.getLogger();
 
@@ -39,7 +39,7 @@ public class ActivityChartService {
     private byte[] dayByMonthImage;
     private byte[] dayImageSinceLastMonth;
 
-    public ActivityChartService(@Autowired ActivityService activityService) {
+    public ActivityAverageChartService(@Autowired ActivityService activityService) {
         this.activityService = activityService;
     }
 

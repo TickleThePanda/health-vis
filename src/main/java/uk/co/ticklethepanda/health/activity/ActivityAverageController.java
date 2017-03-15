@@ -24,8 +24,8 @@ import java.util.*;
  *
  */
 @Controller
-@RequestMapping(value = "/health/average-activity")
-public class ActivityController {
+@RequestMapping(value = "/health/activity", params = "average")
+public class ActivityAverageController {
 
     private static final Logger log = LogManager.getLogger();
 
@@ -35,16 +35,16 @@ public class ActivityController {
     private final Transformer<Collection<MinuteActivity>, DayActivityDto> dayActivityEntityToDto
             = new DayActivityEntityToDto();
     public static final Comparator<MinuteActivity> MINUTE_ACTIVITY_COMPARATOR_BY_TIME = (a, b) -> a.getTime().compareTo(b.getTime());
-    private final ActivityChartService activityChartService;
+    private final ActivityAverageChartService activityAverageChartService;
 
 
-    public ActivityController(@Autowired ActivityService activityService,
-                              @Autowired ActivityChartService activityChartService) {
+    public ActivityAverageController(@Autowired ActivityService activityService,
+                                     @Autowired ActivityAverageChartService activityAverageChartService) {
         this.activityService = activityService;
-        this.activityChartService = activityChartService;
+        this.activityAverageChartService = activityAverageChartService;
     }
 
-    @RequestMapping("/")
+    @RequestMapping
     @ResponseBody
     public DayActivityDto getAverageDay() {
         return dayActivityEntityToDto.transform(activityService.getAverageDay());
@@ -82,12 +82,12 @@ public class ActivityController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                     LocalDate endDate) throws IOException {
         if (startDate == null && endDate == null) {
-            return activityChartService.getAverageDayImage();
+            return activityAverageChartService.getAverageDayImage();
         }
 
         checkPermissionForRange(startDate, endDate);
 
-        return activityChartService.getAverageDayImageBetweenDates(startDate, endDate);
+        return activityAverageChartService.getAverageDayImageBetweenDates(startDate, endDate);
     }
 
     private void checkPermissionForRange(LocalDate startDate, LocalDate endDate) {
@@ -113,19 +113,19 @@ public class ActivityController {
     @RequestMapping(params = {"img", "recent"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayImageForTheLastMonth() throws IOException {
-        return activityChartService.getAverageDayImageForLastMonth();
+        return activityAverageChartService.getAverageDayImageForLastMonth();
     }
 
     @RequestMapping(params = {"img", "facet=weekday"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByWeekdayImage() throws IOException {
-        return activityChartService.getAverageDayByWeekdayImage();
+        return activityAverageChartService.getAverageDayByWeekdayImage();
     }
 
     @RequestMapping(params = {"img", "facet=month"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByMonthImage() throws IOException {
-        return activityChartService.getAverageDayByMonthImage();
+        return activityAverageChartService.getAverageDayByMonthImage();
     }
 
 }

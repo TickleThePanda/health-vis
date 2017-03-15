@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.List;
+import java.util.Map;
 
 public interface ActivityRepo extends JpaRepository<MinuteActivity, Long> {
 
@@ -58,7 +59,7 @@ public interface ActivityRepo extends JpaRepository<MinuteActivity, Long> {
      * {@code weekday(activity.date) + 1}:
      *  weekday is 0-6 from database but 1-7 in {@code java.time}.
      */
-    @Query("select new uk.co.ticklethepanda.health.activity.MinuteActivityByWeekday("
+    @Query("select new uk.co.ticklethepanda.health.activity.MinuteActivityByDayOfWeek("
             + "weekday(activity.date) + 1, activity.time, avg(activity.steps))"
             + " from MinuteActivity as activity"
             + " where " + DATE_HAS_STEPS
@@ -76,4 +77,28 @@ public interface ActivityRepo extends JpaRepository<MinuteActivity, Long> {
 
     @Query("select min(activity.date) from MinuteActivity as activity")
     LocalDate getEarliestDateOfActivity();
+
+    //fudge sum by taking average - normalises the results.
+    @Query("select new uk.co.ticklethepanda.health.activity.ActivitySumByMonth("
+            + " month(activity.date), avg(activity.steps)) "
+            + " from MinuteActivity as activity"
+            + " group by month(activity.date)")
+    List<ActivitySumFacet<Month>> getSumOfStepsByMonth();
+
+    //fudge sum by taking average - normalises the results.
+    @Query("select new uk.co.ticklethepanda.health.activity.ActivitySumByDayOfWeek("
+            + " weekday(activity.date) + 1, avg(activity.steps)) "
+            + " from MinuteActivity as activity"
+            + " group by month(activity.date)")
+    List<ActivitySumFacet<DayOfWeek>> getSumOfStepsByDayOfWeek();
+
+    @Query("select sum(activity.steps) from MinuteActivity as activity")
+    Double getSumOfSteps();
+
+    @Query("select sum(activity.steps) from MinuteActivity as activity"
+            + " where (:start is null or activity.date > :start)"
+            + " and (:end is null or activity.date < :end)")
+    Double getSumOfStepsBetween(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end);
 }

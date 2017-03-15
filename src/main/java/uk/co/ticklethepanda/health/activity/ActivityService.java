@@ -105,4 +105,34 @@ public class ActivityService {
     public LocalDate getFirstDate() {
         return repo.getEarliestDateOfActivity();
     }
+
+    public Map<Month, Double> getSumByMonth() {
+
+        Map<Month, Double> activityByMonth = new TreeMap<>();
+
+        for (ActivitySumFacet<Month> activitySumFacet : repo.getSumOfStepsByMonth()) {
+            activityByMonth.put(activitySumFacet.getFacet(), activitySumFacet.getSum());
+        }
+
+        return activityByMonth;
+    }
+
+    public Map<DayOfWeek, Double> getSumByDayOfWeek() {
+
+        Map<DayOfWeek, Double> activityByDayOfWeek = new TreeMap<>();
+
+        for (ActivitySumFacet<DayOfWeek> activitySumFacet : repo.getSumOfStepsByDayOfWeek()) {
+            activityByDayOfWeek.put(activitySumFacet.getFacet(), activitySumFacet.getSum());
+        }
+
+        return activityByDayOfWeek;
+    }
+
+    public Double getSumOfSteps() {
+        return repo.getSumOfSteps();
+    }
+
+    public Double getSumOfStepsBetween(LocalDate start, LocalDate end) {
+        return repo.getSumOfStepsBetween(start, end);
+    }
 }
