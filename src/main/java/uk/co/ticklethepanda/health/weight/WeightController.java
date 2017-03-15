@@ -74,6 +74,7 @@ public class WeightController {
             @PathVariable("period") EntryPeriod entryPeriod,
             @RequestBody WeightValueDto weightInput) {
         Weight weight = weightService.createWeightEntryForPeriod(date, entryPeriod, weightInput.weight);
+        weightChartService.triggerCache();
         return transformToPeriod(weight, entryPeriod);
     }
 

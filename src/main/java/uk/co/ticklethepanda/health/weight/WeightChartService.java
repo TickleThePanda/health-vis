@@ -8,6 +8,7 @@ import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.style.Styler;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import uk.co.ticklethepanda.health.ChartConfig;
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
 public class WeightChartService {
 
     private static final Logger LOG = LogManager.getLogger();
+
+    private static final int FIFTEEN_MINUTES = 1000 * 60 * 15;
 
     private final WeightService weightService;
     private byte[] weightChart;
@@ -79,7 +82,7 @@ public class WeightChartService {
         return PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
+    @Scheduled(fixedRate = FIFTEEN_MINUTES, initialDelay = 1)
     public void cacheRecentWeightChart() throws IOException {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
@@ -94,7 +97,7 @@ public class WeightChartService {
         this.recentWeightChart = PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
+    @Scheduled(fixedRate = FIFTEEN_MINUTES, initialDelay = 1)
     public void cacheRecentWeightChartWithNoPrediction() throws IOException {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
@@ -109,7 +112,7 @@ public class WeightChartService {
         this.recentWeightChartWithNoPrediction = PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
+    @Scheduled(fixedRate = FIFTEEN_MINUTES, initialDelay = 1)
     public void cacheWeightChart() throws IOException {
         LOG.info("caching weight chart");
 
@@ -168,4 +171,15 @@ public class WeightChartService {
         return bufferedImage;
     }
 
+    @Async
+    public void triggerCache() {
+        try {
+            cacheWeightChart();
+            cacheRecentWeightChart();
+            cacheRecentWeightChartWithNoPrediction();
+        } catch (IOException e) {
+            LOG.warn("could not cache weight charts", e);
+        }
+
+    }
 }
