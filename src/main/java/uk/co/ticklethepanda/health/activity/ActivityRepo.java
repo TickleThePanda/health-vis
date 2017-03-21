@@ -89,7 +89,7 @@ public interface ActivityRepo extends JpaRepository<MinuteActivity, Long> {
     @Query("select new uk.co.ticklethepanda.health.activity.ActivitySumByDayOfWeek("
             + " weekday(activity.date) + 1, avg(activity.steps)) "
             + " from MinuteActivity as activity"
-            + " group by month(activity.date)")
+            + " group by weekday(activity.date)")
     List<ActivitySumFacet<DayOfWeek>> getSumOfStepsByDayOfWeek();
 
     @Query("select sum(activity.steps) from MinuteActivity as activity")

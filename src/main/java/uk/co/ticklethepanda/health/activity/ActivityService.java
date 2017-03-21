@@ -110,7 +110,9 @@ public class ActivityService {
 
         Map<Month, Double> activityByMonth = new TreeMap<>();
 
-        for (ActivitySumFacet<Month> activitySumFacet : repo.getSumOfStepsByMonth()) {
+        List<ActivitySumFacet<Month>> sumOfStepsByMonth = repo.getSumOfStepsByMonth();
+
+        for (ActivitySumFacet<Month> activitySumFacet : sumOfStepsByMonth) {
             activityByMonth.put(activitySumFacet.getFacet(), activitySumFacet.getSum());
         }
 
@@ -121,7 +123,9 @@ public class ActivityService {
 
         Map<DayOfWeek, Double> activityByDayOfWeek = new TreeMap<>();
 
-        for (ActivitySumFacet<DayOfWeek> activitySumFacet : repo.getSumOfStepsByDayOfWeek()) {
+        List<ActivitySumFacet<DayOfWeek>> sumOfStepsByDayOfWeek = repo.getSumOfStepsByDayOfWeek();
+
+        for (ActivitySumFacet<DayOfWeek> activitySumFacet : sumOfStepsByDayOfWeek) {
             activityByDayOfWeek.put(activitySumFacet.getFacet(), activitySumFacet.getSum());
         }
 
