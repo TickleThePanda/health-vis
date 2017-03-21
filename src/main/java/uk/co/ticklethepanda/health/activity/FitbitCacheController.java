@@ -5,7 +5,7 @@ import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +26,9 @@ import uk.co.ticklethepanda.utility.date.LocalDateRange;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.concurrent.Callable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  *
@@ -35,26 +37,26 @@ import java.util.concurrent.Callable;
 @RequestMapping(value = "/health/fitbit")
 public class FitbitCacheController {
 
-    public static final int HOURLY = 1000 * 60 * 60;
-    public static final int IMMEDIATE = 0;
-
     private static final Logger logger = LogManager.getLogger();
 
-    private static final String SCOPE = "activity profile";
+    public static final int HOURLY = 1000 * 60 * 60;
+    public static final int IMMEDIATE = 0;
+    public static final int FORCE_UPDATE_THRESHOLD_DAYS = 14;
 
+    private static final long MONTHLY = 1000L * 60L * 60L * 24L * 28L;
+
+    private static final String SCOPE = "activity profile";
     private static final int EXPIRATION_TIME = 2592000;
 
-    private final String baseUri;
-
     private final UserCredentialManager credentialManager;
+
+    private final List<LocalDate> cacheQueue = new LinkedList<>();
 
     private ActivityService activityService;
 
     public FitbitCacheController(@Autowired UserCredentialManager userCredentialManager,
-                                 @Value("${baseUri}") String baseUri,
                                  @Autowired ActivityService activityService) {
         this.credentialManager = userCredentialManager;
-        this.baseUri = baseUri;
         this.activityService = activityService;
     }
 
@@ -84,45 +86,88 @@ public class FitbitCacheController {
         return new RedirectView(redirect);
     }
 
-    @RequestMapping(value = "/cache")
-    public Callable<Void> triggerCacheCheck() throws IOException, DaoException {
-        return () -> {
-            cacheFitbitData();
-            return null;
-        };
-    }
-
-    @Scheduled(fixedRate = HOURLY, initialDelay = IMMEDIATE)
-    public void cacheFitbitData() throws IOException, DaoException {
-
-        logger.info("refreshing cache");
-
-        logger.info("refreshing token");
-        credentialManager.getCredentialsForUser("me").refreshToken();
-        logger.info("refreshed token");
-
-        HttpRequestFactory requestFactory = credentialManager.getRequestFactoryForMe();
+    @Scheduled(fixedRate = MONTHLY, initialDelay = MONTHLY)
+    @RequestMapping(value = "/cache", method = RequestMethod.DELETE)
+    @ResponseBody
+    public String addAllToCacheQueue() throws IOException, DaoException {
+        HttpRequestFactory requestFactory = getHttpRequestFactory();
 
         FitbitUserRepo userRepo = new FitbitUserRepo(requestFactory);
 
         LocalDate firstDate = userRepo.getAuthorisedUser().getMemberSince();
+        LocalDate today = LocalDate.now();
+        for (LocalDate date : new LocalDateRange(firstDate, today)) {
+            if (!cacheQueue.contains(date)) {
+                cacheQueue.add(date);
+            }
+        }
+        return "cache cleared";
+    }
+
+    @RequestMapping(value = "/cache/queue")
+    @ResponseBody
+    public List<LocalDate> getCacheQueue() {
+        return cacheQueue;
+    }
+
+    @Scheduled(fixedRate = HOURLY, initialDelay = IMMEDIATE)
+    public void updateCacheQueue() throws IOException, DaoException {
+
+        HttpRequestFactory requestFactory = getHttpRequestFactory();
+
+        FitbitUserRepo userRepo = new FitbitUserRepo(requestFactory);
+
+        LocalDate firstDate = userRepo.getAuthorisedUser().getMemberSince();
+        LocalDate today = LocalDate.now();
+
+        for (LocalDate date : new LocalDateRange(firstDate, today)) {
+            if (!activityService.hasCompleteEntry(date)
+                    || date.isAfter(today.minusDays(FORCE_UPDATE_THRESHOLD_DAYS))) {
+                if (!cacheQueue.contains(date)) {
+                    cacheQueue.add(date);
+                }
+            }
+        }
+    }
+
+    @RequestMapping(value = "/cache", method = RequestMethod.PATCH)
+    @ResponseBody
+    public String triggerCacheFitbitData() throws IOException, DaoException {
+        cacheFitbitData();
+        return "caching triggered";
+    }
+
+    @Scheduled(cron = "0 1 * * * *")
+    @Async
+    public void cacheFitbitData() throws IOException, DaoException {
+
+        logger.info("refreshing cache");
+
+        HttpRequestFactory requestFactory = getHttpRequestFactory();
 
         FitbitIntradayActivityRepo intradayActivityDao = new FitbitIntradayActivityRepo(requestFactory);
 
         DayActivityFitbitToEntity transformer = new DayActivityFitbitToEntity();
 
-        for (LocalDate date : new LocalDateRange(firstDate, LocalDate.now())) {
-            if (!activityService.hasCompleteEntry(date)) {
-                logger.info("getting activity from fitbit for " + date.toString());
-                FitbitIntradayActivity activity = intradayActivityDao.getDayActivity(date);
-                logger.info("replacing activity for " + date.toString());
-                activityService.replaceActivities(transformer.transform(activity));
-            } else {
-                logger.info("skipping activity fitbit for " + date.toString() + " - already up to date");
-            }
+        ListIterator<LocalDate> listIterator = cacheQueue.listIterator();
+        while (listIterator.hasNext()) {
+            LocalDate date = listIterator.next();
+            logger.info("getting activity from fitbit for " + date.toString());
+            FitbitIntradayActivity activity = intradayActivityDao.getDayActivity(date);
+            logger.info("replacing activity for " + date.toString());
+            activityService.replaceActivities(transformer.transform(activity));
+
+            listIterator.remove();
         }
-        ;
-        logger.info("refreshed cache");
+
+    }
+
+    private HttpRequestFactory getHttpRequestFactory() throws IOException {
+        logger.info("refreshing token");
+        credentialManager.getCredentialsForUser("me").refreshToken();
+        logger.info("refreshed token");
+
+        return credentialManager.getRequestFactoryForMe();
     }
 
 }
