@@ -3,12 +3,13 @@ package uk.co.ticklethepanda.health.weight;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "WEIGHT",
         uniqueConstraints = @UniqueConstraint(columnNames = {"DATE"}))
-public class Weight {
+public class Weight implements Serializable {
 
     @Id
     @GeneratedValue(generator = "increment")

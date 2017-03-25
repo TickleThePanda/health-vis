@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static uk.co.ticklethepanda.health.weight.WeightTransformers.*;
+import static uk.co.ticklethepanda.health.weight.WeightTransformers.WEIGHT_TO_WEIGHT_DTO;
+import static uk.co.ticklethepanda.health.weight.WeightTransformers.transformToPeriod;
 
 @Controller
 @RequestMapping(value = "/health/weight")
@@ -29,11 +29,7 @@ public class WeightController {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<WeightForDayDto> getWeight() {
-        return weightService
-                .getAllWeight()
-                .stream()
-                .map(WEIGHT_TO_WEIGHT_DTO::transform)
-                .collect(Collectors.toList());
+        return WEIGHT_TO_WEIGHT_DTO.transformList(weightService.getAllWeight());
     }
 
     @RequestMapping(method = RequestMethod.GET, params = {"img", "recent"}, produces = "image/png")
@@ -85,18 +81,6 @@ public class WeightController {
             @PathVariable("period") EntryPeriod entryPeriod) {
         Weight weight = weightService.getWeightForDate(date);
         return transformToPeriod(weight, entryPeriod);
-    }
-
-    private WeightForPeriodDto transformToPeriod(Weight weight, EntryPeriod entryPeriod) {
-        switch (entryPeriod) {
-            case AM:
-                return WEIGHT_TO_WEIGHT_PERIOD_AM_DTO.transform(weight);
-            case PM:
-                return WEIGHT_TO_WEIGHT_PERIOD_PM_DTO.transform(weight);
-            default:
-                throw new IllegalArgumentException(
-                        "period and date where \"/health/weight/{date}/{period}\" cannot be null");
-        }
     }
 
 }

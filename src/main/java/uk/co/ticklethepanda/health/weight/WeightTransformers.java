@@ -12,4 +12,16 @@ public class WeightTransformers {
 
     public static final Transformer<Weight, WeightForDayDto> WEIGHT_TO_WEIGHT_DTO =
             (input) -> new WeightForDayDto(input.getDate(), input.getWeightAm(), input.getWeightPm());
+
+    public static WeightForPeriodDto transformToPeriod(Weight weight, EntryPeriod entryPeriod) {
+        switch (entryPeriod) {
+            case AM:
+                return WEIGHT_TO_WEIGHT_PERIOD_AM_DTO.transform(weight);
+            case PM:
+                return WEIGHT_TO_WEIGHT_PERIOD_PM_DTO.transform(weight);
+            default:
+                throw new IllegalArgumentException(
+                        "period and date where \"/health/weight/{date}/{period}\" cannot be null");
+        }
+    }
 }

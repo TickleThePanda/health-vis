@@ -2,15 +2,14 @@ package uk.co.ticklethepanda.health.activity;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.knowm.xchart.XYChart;
-import org.knowm.xchart.XYChartBuilder;
-import org.knowm.xchart.XYSeries;
+import org.knowm.xchart.*;
 import org.knowm.xchart.style.Styler;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import uk.co.ticklethepanda.health.ChartConfig;
+import uk.co.ticklethepanda.health.activity.domain.MinuteActivity;
 import uk.co.ticklethepanda.utility.image.PngToByteArray;
 
 import java.awt.*;
@@ -28,18 +27,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ActivityAverageChartService {
+public class ActivityChartService {
 
-    private static Logger log = LogManager.getLogger();
-
+    private static final Logger log = LogManager.getLogger();
     private final ActivityService activityService;
 
     private byte[] dayImage;
     private byte[] dayByWeekdayImage;
     private byte[] dayByMonthImage;
     private byte[] dayImageSinceLastMonth;
+    private byte[] sumDayByWeekdayImage;
+    private byte[] sumDayByMonthImage;
 
-    public ActivityAverageChartService(@Autowired ActivityService activityService) {
+    public ActivityChartService(@Autowired ActivityService activityService) {
         this.activityService = activityService;
     }
 
@@ -166,7 +166,6 @@ public class ActivityAverageChartService {
         return imageSet;
     }
 
-
     private BufferedImage createChart(List<MinuteActivity> averageDays) {
         LocalDate today = LocalDate.now();
 
@@ -207,7 +206,6 @@ public class ActivityAverageChartService {
         return bufferedImage;
     }
 
-
     public byte[] getAverageDayByMonthImage() throws IOException {
         if (dayByMonthImage == null) {
             cacheDayByMonthImage();
@@ -244,5 +242,76 @@ public class ActivityAverageChartService {
         List<MinuteActivity> activities = activityService.getAverageDayForRange(startDate, endDate);
 
         return PngToByteArray.convert(createChart(activities));
+    }
+
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
+    public void cacheAverageDayByWeekdayImage() throws IOException {
+        log.info("caching activity sum by weekday chart");
+        Map<DayOfWeek, Double> sumOfStepsByDayOfWeek = activityService.getSumByDayOfWeek();
+
+        this.sumDayByWeekdayImage = PngToByteArray.convert(createChart(sumOfStepsByDayOfWeek));
+        log.info("caching activity sum by weekday chart");
+    }
+
+    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
+    public void cacheAverageDayByMonthImage() throws IOException {
+        log.info("caching activity sum by month chart");
+        Map<Month, Double> sumOfStepsByMonth = activityService.getSumByMonth();
+
+        this.sumDayByMonthImage = PngToByteArray.convert(createChart(sumOfStepsByMonth));
+        log.info("cached activity sum by month chart");
+    }
+
+    private BufferedImage createChart(Map<?, Double> sumOfStepsByMonth) {
+        LocalDate today = LocalDate.now();
+
+        List<Double> yData = sumOfStepsByMonth.entrySet()
+                .stream()
+                .map(a -> a.getValue())
+                .collect(Collectors.toList());
+
+        List<String> xData = sumOfStepsByMonth.entrySet()
+                .stream()
+                .map(a -> a.getKey().toString())
+                .collect(Collectors.toList());
+
+        CategoryChart chart = new CategoryChartBuilder()
+                .width(1000)
+                .height(500)
+                .xAxisTitle("Month")
+                .yAxisTitle("Steps")
+                .theme(Styler.ChartTheme.GGPlot2)
+                .build();
+
+        Font font = chart.getStyler().getAxisTickLabelsFont();
+
+        chart.getStyler().setLegendVisible(false);
+        chart.getStyler().setYAxisTicksVisible(false);
+        chart.getStyler().setAxisTickLabelsFont(font.deriveFont(
+                Collections.singletonMap(
+                        TextAttribute.WEIGHT, TextAttribute.WEIGHT_LIGHT)));
+        chart.getStyler().setDatePattern("HH:mm");
+        chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
+
+        chart.addSeries("data", xData, yData);
+
+        BufferedImage bufferedImage = new BufferedImage(chart.getWidth(), chart.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = bufferedImage.createGraphics();
+        chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
+        return bufferedImage;
+    }
+
+    public byte[] getSumDayByWeekdayImage() throws IOException {
+        if (sumDayByWeekdayImage == null) {
+            cacheDayByWeekdayImage();
+        }
+        return sumDayByWeekdayImage;
+    }
+
+    public byte[] getSumDayByMonthImage() throws IOException {
+        if (sumDayByMonthImage == null) {
+            cacheDayByMonthImage();
+        }
+        return sumDayByMonthImage;
     }
 }

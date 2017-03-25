@@ -1,7 +1,7 @@
 package uk.co.ticklethepanda.health.activity.transformers;
 
 import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivity;
-import uk.co.ticklethepanda.health.activity.MinuteActivity;
+import uk.co.ticklethepanda.health.activity.domain.MinuteActivity;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.util.Set;

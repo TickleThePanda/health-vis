@@ -1,8 +1,9 @@
-package uk.co.ticklethepanda.health.activity;
+package uk.co.ticklethepanda.health.activity.domain;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -16,7 +17,7 @@ import static java.util.stream.Collectors.toList;
 @Entity
 @Table(name = "MINUTE_ACTIVITY",
         uniqueConstraints = @UniqueConstraint(columnNames = {"DATE", "TIME"}))
-public class MinuteActivity {
+public class MinuteActivity implements Serializable {
 
     @Id
     @GeneratedValue(generator = "increment")
@@ -44,7 +45,6 @@ public class MinuteActivity {
     }
 
     public MinuteActivity(LocalTime time, double steps) {
-        this.date = date;
         this.time = time;
         this.steps = steps;
     }

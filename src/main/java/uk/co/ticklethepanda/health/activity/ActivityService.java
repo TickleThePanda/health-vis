@@ -5,6 +5,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import uk.co.ticklethepanda.health.activity.domain.ActivityRepo;
+import uk.co.ticklethepanda.health.activity.domain.MinuteActivity;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -65,7 +67,7 @@ public class ActivityService {
 
     @Cacheable
     public Map<Month, List<MinuteActivity>> getAverageDayByMonth() {
-        List<MinuteActivityFacet<Month>> facets = repo.getAverageDayByMonth();
+        List<Map.Entry<Month, MinuteActivity>> facets = repo.getAverageDayByMonth();
 
         Map<Month, List<MinuteActivity>> monthsToActvivites = convertToMap(facets);
 
@@ -74,24 +76,24 @@ public class ActivityService {
 
     @Cacheable
     public Map<DayOfWeek, List<MinuteActivity>> getAverageDayByWeekday() {
-        List<MinuteActivityFacet<DayOfWeek>> facets = repo.getAverageDayByWeekday();
+        List<Map.Entry<DayOfWeek, MinuteActivity>> facets = repo.getAverageDayByWeekday();
 
         Map<DayOfWeek, List<MinuteActivity>> monthsToActvivites = convertToMap(facets);
 
         return monthsToActvivites;
     }
 
-    private <T extends TemporalAccessor> Map<T, List<MinuteActivity>> convertToMap(List<MinuteActivityFacet<T>> facets) {
+    private <T extends TemporalAccessor> Map<T, List<MinuteActivity>> convertToMap(List<Map.Entry<T, MinuteActivity>> facets) {
         Map<T, List<MinuteActivity>> activitiesFacets = new TreeMap<>();
 
-        for (MinuteActivityFacet<T> m : facets) {
-            T facet = m.getFacet();
+        for (Map.Entry<T, MinuteActivity> m : facets) {
+            T facet = m.getKey();
 
             if (!activitiesFacets.containsKey(facet)) {
                 activitiesFacets.put(facet, new ArrayList<>());
             }
 
-            activitiesFacets.get(facet).add(m.getActivity());
+            activitiesFacets.get(facet).add(m.getValue());
         }
         return activitiesFacets;
     }
@@ -110,10 +112,10 @@ public class ActivityService {
 
         Map<Month, Double> activityByMonth = new TreeMap<>();
 
-        List<ActivitySumFacet<Month>> sumOfStepsByMonth = repo.getSumOfStepsByMonth();
+        List<Map.Entry<Month, Double>> sumOfStepsByMonth = repo.getSumOfStepsByMonth();
 
-        for (ActivitySumFacet<Month> activitySumFacet : sumOfStepsByMonth) {
-            activityByMonth.put(activitySumFacet.getFacet(), activitySumFacet.getSum());
+        for (Map.Entry<Month, Double> activitySumFacet : sumOfStepsByMonth) {
+            activityByMonth.put(activitySumFacet.getKey(), activitySumFacet.getValue());
         }
 
         return activityByMonth;
@@ -123,10 +125,10 @@ public class ActivityService {
 
         Map<DayOfWeek, Double> activityByDayOfWeek = new TreeMap<>();
 
-        List<ActivitySumFacet<DayOfWeek>> sumOfStepsByDayOfWeek = repo.getSumOfStepsByDayOfWeek();
+        List<Map.Entry<DayOfWeek, Double>> sumOfStepsByDayOfWeek = repo.getSumOfStepsByDayOfWeek();
 
-        for (ActivitySumFacet<DayOfWeek> activitySumFacet : sumOfStepsByDayOfWeek) {
-            activityByDayOfWeek.put(activitySumFacet.getFacet(), activitySumFacet.getSum());
+        for (Map.Entry<DayOfWeek, Double> activitySumFacet : sumOfStepsByDayOfWeek) {
+            activityByDayOfWeek.put(activitySumFacet.getKey(), activitySumFacet.getValue());
         }
 
         return activityByDayOfWeek;
