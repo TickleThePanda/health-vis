@@ -1,0 +1,20 @@
+#image files
+*.png
+
+#imported libraries
+*.jar
+modules/*
+
+#builds
+bin/*
+
+#personal files
+config.properties
+auths/
+
+#ide files
+.settings/*
+.idea/*
+*.iml
+.project
+/target/

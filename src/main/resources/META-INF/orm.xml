@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings
+        xmlns="http://java.sun.com/xml/ns/persistence/orm"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_0.xsd"
+        version="2.0">
+
+    <named-query name="MinuteActivity.getAverageDay">
+        <query>
+            <![CDATA[
+            select new MinuteActivity(
+                    activity.time,
+                    avg(activity.steps)
+                )
+                from MinuteActivity as activity
+                where activity.date in (
+                    select activity.date
+                    from MinuteActivity as activity
+                    group by activity.date having sum(activity.steps) > 0
+                )
+                group by activity.time
+                order by activity.time
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getAverageDayBetweenDates">
+        <query>
+            <![CDATA[
+            select new MinuteActivity(
+                    activity.time,
+                    avg(activity.steps)
+                )
+                from MinuteActivity as activity
+                where (:start is null or activity.date > :start)
+                    and (:end is null or activity.date < :end)
+                    and activity.date in (
+                        select activity.date
+                        from MinuteActivity as activity
+                        group by activity.date having sum(activity.steps) > 0
+                    )
+                group by activity.time
+                order by activity.time
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getAverageDayByWeekday">
+        <query>
+            <![CDATA[
+            select new uk.co.ticklethepanda.health.activity.domain.MinuteActivityByDayOfWeek(
+                    weekday(activity.date) + 1,
+                    activity.time,
+                    avg(activity.steps)
+                )
+                from MinuteActivity as activity
+                where activity.date in (
+                    select activity.date
+                    from MinuteActivity as activity
+                    group by activity.date having sum(activity.steps) > 0
+                )
+                group by weekday(activity.date), activity.time
+                order by weekday(activity.date), activity.time
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getAverageDayByMonth">
+        <query>
+            <![CDATA[
+            select new uk.co.ticklethepanda.health.activity.domain.MinuteActivityByMonth(
+                    month(activity.date),
+                    activity.time,
+                    avg(activity.steps)
+                )
+                from MinuteActivity as activity
+                where  activity.date in (
+                    select activity.date
+                    from MinuteActivity as activity
+                    group by activity.date having sum(activity.steps) > 0
+                )
+                group by month(activity.date), activity.time
+                order by month(activity.date), activity.time
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getEarliestDateOfActivity">
+        <query>
+            <![CDATA[
+            select min(activity.date) from MinuteActivity as activity
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getSumOfStepsByMonth">
+        <query>
+            <![CDATA[
+            select new uk.co.ticklethepanda.health.activity.domain.ActivitySumByMonth(
+                    month(activity.date),
+                    avg(activity.steps)
+                )
+                from MinuteActivity as activity
+                where activity.date in (
+                    select activity.date
+                    from MinuteActivity as activity
+                    group by activity.date having sum(activity.steps) > 0
+                )
+                group by month(activity.date)
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getSumOfStepsByDayOfWeek">
+        <query>
+            <![CDATA[
+            select new uk.co.ticklethepanda.health.activity.domain.ActivitySumByDayOfWeek(
+                    weekday(activity.date) + 1,
+                    avg(activity.steps)
+                )
+                from MinuteActivity as activity
+                where activity.date in (
+                    select activity.date
+                    from MinuteActivity as activity
+                    group by activity.date having sum(activity.steps) > 0
+                )
+                group by weekday(activity.date)
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getSumOfSteps">
+        <query>
+            <![CDATA[
+            select sum(activity.steps)
+                from MinuteActivity as activity
+            ]]>
+        </query>
+    </named-query>
+    <named-query name="MinuteActivity.getSumOfStepsBetween">
+        <query>
+            <![CDATA[
+            select sum(activity.steps)
+                from MinuteActivity as activity
+                where (:start is null or activity.date > :start)
+                    and (:end is null or activity.date < :end)
+            ]]>
+        </query>
+    </named-query>
+    
+</entity-mappings>
