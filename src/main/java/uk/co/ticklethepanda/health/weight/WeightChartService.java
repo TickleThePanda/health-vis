@@ -30,7 +30,7 @@ public class WeightChartService {
 
     private static final Logger LOG = LogManager.getLogger();
 
-    private static final int FIFTEEN_MINUTES = 1000 * 60 * 15;
+    private static final int SIX_HOURS = 1000 * 60 * 60 * 6;
 
     private final WeightService weightService;
     private byte[] weightChart;
@@ -82,7 +82,7 @@ public class WeightChartService {
         return PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = FIFTEEN_MINUTES, initialDelay = 1)
+    @Scheduled(fixedRate = SIX_HOURS, initialDelay = 1)
     public void cacheRecentWeightChart() throws IOException {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
@@ -97,7 +97,7 @@ public class WeightChartService {
         this.recentWeightChart = PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = FIFTEEN_MINUTES, initialDelay = 1)
+    @Scheduled(fixedRate = SIX_HOURS, initialDelay = 1)
     public void cacheRecentWeightChartWithNoPrediction() throws IOException {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
@@ -112,7 +112,7 @@ public class WeightChartService {
         this.recentWeightChartWithNoPrediction = PngToByteArray.convert(bufferedImage);
     }
 
-    @Scheduled(fixedRate = FIFTEEN_MINUTES, initialDelay = 1)
+    @Scheduled(fixedRate = SIX_HOURS, initialDelay = 1)
     public void cacheWeightChart() throws IOException {
         LOG.info("caching weight chart");
 
