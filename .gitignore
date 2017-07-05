@@ -1,5 +1,6 @@
 #image files
 *.png
+/cached
 
 #imported libraries
 *.jar

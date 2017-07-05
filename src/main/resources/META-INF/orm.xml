@@ -46,7 +46,7 @@
     <named-query name="MinuteActivity.getAverageDayByWeekday">
         <query>
             <![CDATA[
-            select new uk.co.ticklethepanda.health.activity.domain.MinuteActivityByDayOfWeek(
+            select new uk.co.ticklethepanda.health.activity.domain.data.MinuteActivityByDayOfWeek(
                     weekday(activity.date) + 1,
                     activity.time,
                     avg(activity.steps)
@@ -65,7 +65,7 @@
     <named-query name="MinuteActivity.getAverageDayByMonth">
         <query>
             <![CDATA[
-            select new uk.co.ticklethepanda.health.activity.domain.MinuteActivityByMonth(
+            select new uk.co.ticklethepanda.health.activity.domain.data.MinuteActivityByMonth(
                     month(activity.date),
                     activity.time,
                     avg(activity.steps)
@@ -91,7 +91,7 @@
     <named-query name="MinuteActivity.getSumOfStepsByMonth">
         <query>
             <![CDATA[
-            select new uk.co.ticklethepanda.health.activity.domain.ActivitySumByMonth(
+            select new uk.co.ticklethepanda.health.activity.domain.data.ActivitySumByMonth(
                     month(activity.date),
                     avg(activity.steps)
                 )
@@ -108,7 +108,7 @@
     <named-query name="MinuteActivity.getSumOfStepsByDayOfWeek">
         <query>
             <![CDATA[
-            select new uk.co.ticklethepanda.health.activity.domain.ActivitySumByDayOfWeek(
+            select new uk.co.ticklethepanda.health.activity.domain.data.ActivitySumByDayOfWeek(
                     weekday(activity.date) + 1,
                     avg(activity.steps)
                 )
@@ -140,5 +140,5 @@
             ]]>
         </query>
     </named-query>
-    
+
 </entity-mappings>

@@ -5,8 +5,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import uk.co.ticklethepanda.health.activity.domain.ActivityRepo;
-import uk.co.ticklethepanda.health.activity.domain.MinuteActivity;
+import uk.co.ticklethepanda.health.activity.domain.repositories.ActivityRepo;
+import uk.co.ticklethepanda.health.activity.domain.entities.MinuteActivity;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

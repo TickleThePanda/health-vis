@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import uk.co.ticklethepanda.health.ChartConfig;
+import uk.co.ticklethepanda.health.weight.dtos.PredictedWeightDto;
 import uk.co.ticklethepanda.utility.image.PngToByteArray;
 
 import java.awt.*;
@@ -69,7 +70,7 @@ public class WeightChartService {
     public byte[] getChartBetweenDates(LocalDate start, LocalDate end) throws IOException {
         LOG.info("caching weight chart");
 
-        List<PredictedWeight> weights = PredictedWeight.predictWeights(weightService.getAllWeightWithEntries())
+        List<PredictedWeightDto> weights = PredictedWeightDto.predictWeights(weightService.getAllWeight())
                 .stream()
                 .filter(w ->
                         (start == null || w.getDate().isAfter(start))
@@ -87,7 +88,7 @@ public class WeightChartService {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
 
-        List<PredictedWeight> weights = PredictedWeight.predictWeights((weightService.getAllWeightWithEntries()))
+        List<PredictedWeightDto> weights = PredictedWeightDto.predictWeights((weightService.getAllWeight()))
                 .stream()
                 .filter(w -> w.getDate().isAfter(aMonthAgo))
                 .collect(Collectors.toList());
@@ -102,7 +103,7 @@ public class WeightChartService {
         LOG.info("caching recent weight chart");
         LocalDate aMonthAgo = LocalDate.now().minusDays(30);
 
-        List<PredictedWeight> weights = PredictedWeight.calculateBasicAverage((weightService.getAllWeightWithEntries()))
+        List<PredictedWeightDto> weights = PredictedWeightDto.calculateBasicAverage((weightService.getAllWeight()))
                 .stream()
                 .filter(w -> w.getDate().isAfter(aMonthAgo))
                 .collect(Collectors.toList());
@@ -117,17 +118,17 @@ public class WeightChartService {
         LOG.info("caching weight chart");
 
         BufferedImage bufferedImage = createChart(
-                PredictedWeight.predictWeights(weightService.getAllWeightWithEntries()));
+                PredictedWeightDto.predictWeights(weightService.getAllWeight()));
 
 
         this.weightChart = PngToByteArray.convert(bufferedImage);
     }
 
-    private BufferedImage createChart(List<PredictedWeight> weights) {
+    private BufferedImage createChart(List<PredictedWeightDto> weights) {
         final int chartWidth = 1000;
         final int chartHeight = 500;
         final int minMarkerSize = 4;
-        final int markerSizeModifier = 8;
+        final int maxMarkerSize = 10;
 
         List<Double> yData = weights.stream()
                 .map(w -> w.getValue())
@@ -155,9 +156,9 @@ public class WeightChartService {
         chart.getStyler().setDatePattern("YYYY-MM-dd");
         chart.getStyler().setChartPadding(ChartConfig.CHART_PADDING);
 
-        int markerSize = chartWidth / xData.size() / markerSizeModifier;
-        markerSize = Math.min(markerSize, 10);
-        markerSize = Math.max(markerSize, 4);
+        int markerSize = (int) (chartWidth / xData.size() * 0.8);
+        markerSize = Math.min(markerSize, maxMarkerSize);
+        markerSize = Math.max(markerSize, minMarkerSize);
         chart.getStyler().setMarkerSize(markerSize);
 
 

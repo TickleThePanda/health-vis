@@ -1,7 +1,8 @@
-package uk.co.ticklethepanda.health.activity.domain;
+package uk.co.ticklethepanda.health.activity.domain.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
+import uk.co.ticklethepanda.health.activity.domain.entities.MinuteActivity;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

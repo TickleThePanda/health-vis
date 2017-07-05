@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import uk.co.ticklethepanda.health.ChartConfig;
-import uk.co.ticklethepanda.health.activity.domain.MinuteActivity;
+import uk.co.ticklethepanda.health.activity.domain.entities.MinuteActivity;
 import uk.co.ticklethepanda.utility.image.PngToByteArray;
 
 import java.awt.*;
@@ -29,60 +29,83 @@ import java.util.stream.Collectors;
 @Service
 public class ActivityChartService {
 
+    public enum Images {
+        DAY_IMAGE,
+        DAY_BY_WEEKDAY_IMAGE,
+        DAY_BY_MONTH_IMAGE,
+        DAY_SINCE_LAST_MONTH_IMAGE,
+        SUM_DAYS_BY_WEEKDAY_IMAGE,
+        SUM_DAYS_BY_MONTH_IMAGE
+    }
+
     private static final Logger log = LogManager.getLogger();
+    private static final int HOURLY = 1000 * 60 * 60;
+
     private final ActivityService activityService;
 
-    private byte[] dayImage;
-    private byte[] dayByWeekdayImage;
-    private byte[] dayByMonthImage;
-    private byte[] dayImageSinceLastMonth;
-    private byte[] sumDayByWeekdayImage;
-    private byte[] sumDayByMonthImage;
+    private SelfDescriptiveMap<Images, ImageCachingService> cachers = new SelfDescriptiveMap<>();
 
     public ActivityChartService(@Autowired ActivityService activityService) {
         this.activityService = activityService;
+        cachers.put(new ImageCachingService(Images.DAY_IMAGE,
+                () -> {
+                    List<MinuteActivity> averageDays = activityService.getAverageDay();
+
+                    BufferedImage bufferedImage = createChart(averageDays);
+
+                    return PngToByteArray.convert(bufferedImage);
+                })
+        );
+        cachers.put(new ImageCachingService(Images.DAY_SINCE_LAST_MONTH_IMAGE,
+                () -> {
+                    List<MinuteActivity> activities = activityService.getAverageDayForRange(
+                            LocalDate.now().minus(30, ChronoUnit.DAYS),
+                            null);
+
+                    return PngToByteArray.convert(createChart(activities));
+                }
+        ));
+        cachers.put(new ImageCachingService(Images.DAY_BY_MONTH_IMAGE,
+                () -> {
+                    Map<Month, List<MinuteActivity>> entities =
+                            activityService.getAverageDayByMonth();
+
+                    return PngToByteArray.convert(createFacetedChart(entities));
+                }
+        ));
+        cachers.put(new ImageCachingService(Images.DAY_BY_WEEKDAY_IMAGE,
+                () -> {
+                    Map<DayOfWeek, List<MinuteActivity>> entities =
+                            activityService.getAverageDayByWeekday();
+
+                    return PngToByteArray.convert(createFacetedChart(entities));
+                }
+        ));
+        cachers.put(new ImageCachingService(Images.SUM_DAYS_BY_MONTH_IMAGE,
+                () -> {
+
+                    Map<Month, Double> sumOfStepsByMonth = activityService.getSumByMonth();
+
+                    return PngToByteArray.convert(createChart(sumOfStepsByMonth));
+                }
+        ));
+        cachers.put(new ImageCachingService(Images.SUM_DAYS_BY_WEEKDAY_IMAGE,
+                () -> {
+
+                    Map<DayOfWeek, Double> sumOfStepsByMonth = activityService.getSumByDayOfWeek();
+
+                    return PngToByteArray.convert(createChart(sumOfStepsByMonth));
+                }
+        ));
     }
 
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
-    public void cacheDayImage() throws IOException {
-        log.info("caching activity chart");
-
-        List<MinuteActivity> averageDays = activityService.getAverageDay();
-
-        BufferedImage bufferedImage = createChart(averageDays);
-
-        this.dayImage = PngToByteArray.convert(bufferedImage);
-
-        log.info("cached activity chart");
-    }
-
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
-    public void cacheDayByRecent() throws IOException {
-        log.info("caching activity by recent");
-        List<MinuteActivity> activities = activityService.getAverageDayForRange(
-                LocalDate.now().minus(30, ChronoUnit.DAYS),
-                null);
-
-        this.dayImageSinceLastMonth = PngToByteArray.convert(createChart(activities));
-        log.info("cached activity by recent");
-    }
-
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
-    public void cacheDayByWeekdayImage() throws IOException {
-        log.info("caching activity by weekday chart");
-        Map<DayOfWeek, List<MinuteActivity>> entities = activityService.getAverageDayByWeekday();
-
-        this.dayByWeekdayImage = PngToByteArray.convert(createFacetedChart(entities));
-        log.info("caching activity by weekday chart");
-    }
-
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
-    public void cacheDayByMonthImage() throws IOException {
-        log.info("caching activity by month chart");
-        Map<Month, List<MinuteActivity>> entities = activityService.getAverageDayByMonth();
-
-        this.dayByMonthImage = PngToByteArray.convert(createFacetedChart(entities));
-        log.info("cached activity by month chart");
+    @Scheduled(fixedRate = HOURLY, initialDelay = 1)
+    public void cacheImages() {
+        for (Map.Entry<Images, ImageCachingService> entry : cachers.entrySet()) {
+            log.info("caching " + entry.getKey().toString() + " chart");
+            entry.getValue().update();
+            log.info("cached " + entry.getKey().toString() + " chart");
+        }
     }
 
     private BufferedImage createFacetedChart(Map<?, List<MinuteActivity>> entities) {
@@ -102,9 +125,9 @@ public class ActivityChartService {
                 .flatMap(e -> e.getValue().stream())
                 .collect(Collectors.toList())
                 .stream()
-                .map(a -> a.getSteps())
-                .reduce(Math::max)
-                .get();
+                .mapToDouble(a -> a.getSteps())
+                .max()
+                .getAsDouble();
 
         for (Map.Entry<?, List<MinuteActivity>> entry : entities.entrySet()) {
 
@@ -206,35 +229,8 @@ public class ActivityChartService {
         return bufferedImage;
     }
 
-    public byte[] getAverageDayByMonthImage() throws IOException {
-        if (dayByMonthImage == null) {
-            cacheDayByMonthImage();
-        }
-        return dayByMonthImage;
-    }
-
-    public byte[] getAverageDayByWeekdayImage() throws IOException {
-        if (dayByWeekdayImage == null) {
-            cacheDayByWeekdayImage();
-        }
-
-        return dayByWeekdayImage;
-    }
-
-    public byte[] getAverageDayImage() throws IOException {
-        if (dayImage == null) {
-            cacheDayImage();
-        }
-
-        return dayImage;
-    }
-
-    public byte[] getAverageDayImageForLastMonth() throws IOException {
-        if (dayImageSinceLastMonth == null) {
-            cacheDayByRecent();
-        }
-
-        return dayImageSinceLastMonth;
+    public byte[] getSavedImage(Images image) {
+        return cachers.get(image).get();
     }
 
     public byte[] getAverageDayImageBetweenDates(LocalDate startDate, LocalDate endDate) throws IOException {
@@ -242,24 +238,6 @@ public class ActivityChartService {
         List<MinuteActivity> activities = activityService.getAverageDayForRange(startDate, endDate);
 
         return PngToByteArray.convert(createChart(activities));
-    }
-
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
-    public void cacheAverageDayByWeekdayImage() throws IOException {
-        log.info("caching activity sum by weekday chart");
-        Map<DayOfWeek, Double> sumOfStepsByDayOfWeek = activityService.getSumByDayOfWeek();
-
-        this.sumDayByWeekdayImage = PngToByteArray.convert(createChart(sumOfStepsByDayOfWeek));
-        log.info("caching activity sum by weekday chart");
-    }
-
-    @Scheduled(fixedRate = 1000 * 60, initialDelay = 1)
-    public void cacheAverageDayByMonthImage() throws IOException {
-        log.info("caching activity sum by month chart");
-        Map<Month, Double> sumOfStepsByMonth = activityService.getSumByMonth();
-
-        this.sumDayByMonthImage = PngToByteArray.convert(createChart(sumOfStepsByMonth));
-        log.info("cached activity sum by month chart");
     }
 
     private BufferedImage createChart(Map<?, Double> sumOfStepsByMonth) {
@@ -299,19 +277,5 @@ public class ActivityChartService {
         Graphics2D graphics2D = bufferedImage.createGraphics();
         chart.paint(graphics2D, chart.getWidth(), chart.getHeight());
         return bufferedImage;
-    }
-
-    public byte[] getSumDayByWeekdayImage() throws IOException {
-        if (sumDayByWeekdayImage == null) {
-            cacheDayByWeekdayImage();
-        }
-        return sumDayByWeekdayImage;
-    }
-
-    public byte[] getSumDayByMonthImage() throws IOException {
-        if (sumDayByMonthImage == null) {
-            cacheDayByMonthImage();
-        }
-        return sumDayByMonthImage;
     }
 }

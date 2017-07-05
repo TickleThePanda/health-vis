@@ -4,11 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import uk.co.ticklethepanda.health.weight.domain.entities.EntryPeriod;
+import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
+import uk.co.ticklethepanda.health.weight.dtos.*;
+import uk.co.ticklethepanda.utility.web.Transformer;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import static java.util.Comparator.comparingDouble;
 import static uk.co.ticklethepanda.health.weight.WeightTransformers.WEIGHT_TO_WEIGHT_DTO;
 import static uk.co.ticklethepanda.health.weight.WeightTransformers.transformToPeriod;
 
@@ -18,6 +23,9 @@ public class WeightController {
 
     private final WeightService weightService;
     private final WeightChartService weightChartService;
+
+    private final static Transformer<Weight, WeightForDayDto> WEIGHT_TRANSFORMER =
+            WeightTransformers.WEIGHT_TO_WEIGHT_DTO;
 
     public WeightController(
             @Autowired WeightService weightService,
@@ -30,36 +38,6 @@ public class WeightController {
     @ResponseBody
     public List<WeightForDayDto> getWeight() {
         return WEIGHT_TO_WEIGHT_DTO.transformList(weightService.getAllWeight());
-    }
-
-    @RequestMapping(method = RequestMethod.GET, params = {"img", "recent"}, produces = "image/png")
-    @ResponseBody
-    public byte[] getRecentWeightChart() throws IOException {
-        return weightChartService.getRecentWeightChart();
-    }
-
-    @RequestMapping(method = RequestMethod.GET, params = {"img", "recent", "no-prediction"}, produces = "image/png")
-    @ResponseBody
-    public byte[] getRecentWeightChartWithNoPrediction() throws IOException {
-        return weightChartService.getRecentWeightChartWithNoPrediction();
-    }
-
-    @RequestMapping(method = RequestMethod.GET, params = {"img"}, produces = "image/png")
-    @ResponseBody
-    public byte[] getWeightChart(
-            @RequestParam(value = "after", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                    LocalDate startDate,
-            @RequestParam(value = "before", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                    LocalDate endDate)
-            throws IOException {
-
-        if (startDate == null && endDate == null) {
-            return weightChartService.getWeightChart();
-        }
-
-        return weightChartService.getChartBetweenDates(startDate, endDate);
     }
 
     @RequestMapping(value = "/{date}/{period}",
@@ -81,6 +59,63 @@ public class WeightController {
             @PathVariable("period") EntryPeriod entryPeriod) {
         Weight weight = weightService.getWeightForDate(date);
         return transformToPeriod(weight, entryPeriod);
+    }
+
+    @RequestMapping(value = "/prediction", method = RequestMethod.GET)
+    @ResponseBody
+    public PredictedWeightLossDto predictWeightLoss() {
+        List<Weight> weights = weightService.getAllWeight();
+
+        return predictWeightLoss(weights);
+
+    }
+
+    @RequestMapping(value = "/prediction", params = {"since"}, method = RequestMethod.GET)
+    @ResponseBody
+    public PredictedWeightLossDto predictWeightLoss(
+            @RequestParam("since") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        List<Weight> weights = weightService.getWeightWithinDateRange(date, null);
+
+        return predictWeightLoss(weights);
+
+    }
+
+    private PredictedWeightLossDto predictWeightLoss(List<Weight> weights) {
+        Weight heaviest = weights.stream()
+                .max(comparingDouble(Weight::getAverage))
+                .get();
+        Weight lightest = weights.stream()
+                .min(comparingDouble(Weight::getAverage))
+                .get();
+        Weight latest = weightService.getMostRecent();
+
+        double daysBetween = ChronoUnit.DAYS.between(heaviest.getDate(), lightest.getDate());
+
+        double lossPerDay = (heaviest.getAverage() - latest.getAverage()) / daysBetween;
+
+        double expectedTimeToTarget =
+                (latest.getAverage() - weightService.getWeightTarget())
+                        / lossPerDay;
+
+        double expectedTimeToIntermedate =
+                (latest.getAverage() - weightService.getIntermediateWeightTargetForWeight(latest))
+                        / lossPerDay;
+
+        return new PredictedWeightLossDto(
+                WEIGHT_TRANSFORMER.transform(heaviest),
+                WEIGHT_TRANSFORMER.transform(lightest),
+                WEIGHT_TRANSFORMER.transform(latest),
+                lossPerDay,
+                new PredictedWeightLossToTargetDto(
+                        weightService.getWeightTarget(),
+                        expectedTimeToTarget
+                ),
+                new PredictedWeightLossToTargetDto(
+                        weightService.getIntermediateWeightTargetForWeight(latest),
+                        expectedTimeToIntermedate
+                )
+        );
     }
 
 }

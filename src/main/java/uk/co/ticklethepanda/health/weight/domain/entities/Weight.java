@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.weight;
+package uk.co.ticklethepanda.health.weight.domain.entities;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -96,6 +96,16 @@ public class Weight implements Serializable {
     }
 
     public Double getAverage() {
-        return (getWeightAm() + getWeightPm()) / 2.0;
+        if (weightAm == null && weightPm == null) {
+            return null;
+        }
+        if (weightAm != null && weightPm != null) {
+            return (getWeightAm() + getWeightPm()) / 2.0;
+        }
+        if (weightAm != null) {
+            return weightAm;
+        } else {
+            return weightPm;
+        }
     }
 }

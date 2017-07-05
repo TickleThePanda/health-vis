@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import uk.co.ticklethepanda.health.activity.domain.MinuteActivity;
+import uk.co.ticklethepanda.health.activity.domain.entities.MinuteActivity;
+import uk.co.ticklethepanda.health.activity.dto.ActivitySumDto;
 import uk.co.ticklethepanda.health.activity.dto.DayActivityDto;
-import uk.co.ticklethepanda.health.activity.dto.transformers.DayActivityEntityToDto;
+import uk.co.ticklethepanda.health.activity.transformers.DayActivityEntityToDto;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,8 @@ public class ActivityController {
 
     private final Transformer<List<MinuteActivity>, DayActivityDto> dayActivityEntityToDto
             = new DayActivityEntityToDto();
-    ActivityService activityService;
+
+    private final ActivityService activityService;
 
     public ActivityController(@Autowired ActivityService activityService) {
         this.activityService = activityService;
@@ -67,8 +70,11 @@ public class ActivityController {
 
     @RequestMapping(params = {"sum"})
     @ResponseBody
-    public Double getSum() {
-        return activityService.getSumOfSteps();
+    public ActivitySumDto getSum() {
+        double sumOfSteps = activityService.getSumOfSteps();
+        LocalDate date = activityService.getFirstDate();
+
+        return new ActivitySumDto(sumOfSteps, date);
     }
 
 }

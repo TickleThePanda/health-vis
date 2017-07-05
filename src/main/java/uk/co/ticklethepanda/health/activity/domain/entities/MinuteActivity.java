@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.domain;
+package uk.co.ticklethepanda.health.activity.domain.entities;
 
 import org.hibernate.annotations.GenericGenerator;
 

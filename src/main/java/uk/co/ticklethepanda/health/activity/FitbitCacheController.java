@@ -137,7 +137,7 @@ public class FitbitCacheController {
         return "caching triggered";
     }
 
-    @Scheduled(cron = "0 1 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     @Async
     public void cacheFitbitData() throws IOException, DaoException {
 

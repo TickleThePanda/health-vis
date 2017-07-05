@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.domain;
+package uk.co.ticklethepanda.health.activity.domain.data;
 
 import java.time.DayOfWeek;
 

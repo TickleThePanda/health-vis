@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import uk.co.ticklethepanda.health.activity.ActivityChartService.Images;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -30,13 +31,13 @@ public class ActivityChartController {
     @RequestMapping(params = {"by=day", "facet=weekday"}, produces = "image/png")
     @ResponseBody
     public byte[] getSumDayByWeekdayImage() throws IOException {
-        return activityChartService.getSumDayByWeekdayImage();
+        return activityChartService.getSavedImage(Images.SUM_DAYS_BY_WEEKDAY_IMAGE);
     }
 
     @RequestMapping(params = {"by=day", "facet=month"}, produces = "image/png")
     @ResponseBody
     public byte[] getSumDayByMonthImage() throws IOException {
-        return activityChartService.getSumDayByMonthImage();
+        return activityChartService.getSavedImage(Images.SUM_DAYS_BY_MONTH_IMAGE);
     }
 
     @RequestMapping(params = {"by=minute"}, produces = "image/png")
@@ -49,7 +50,7 @@ public class ActivityChartController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                     LocalDate endDate) throws IOException {
         if (startDate == null && endDate == null) {
-            return activityChartService.getAverageDayImage();
+            return activityChartService.getSavedImage(Images.DAY_IMAGE);
         }
 
         checkPermissionForRange(startDate, endDate);
@@ -60,19 +61,19 @@ public class ActivityChartController {
     @RequestMapping(params = {"by=minute", "recent"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayImageForTheLastMonth() throws IOException {
-        return activityChartService.getAverageDayImageForLastMonth();
+        return activityChartService.getSavedImage(Images.DAY_SINCE_LAST_MONTH_IMAGE);
     }
 
     @RequestMapping(params = {"by=minute", "facet=weekday"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByWeekdayImage() throws IOException {
-        return activityChartService.getAverageDayByWeekdayImage();
+        return activityChartService.getSavedImage(Images.DAY_BY_WEEKDAY_IMAGE);
     }
 
     @RequestMapping(params = {"by=minute", "facet=month"}, produces = "image/png")
     @ResponseBody
     public byte[] getAverageDayByMonthImage() throws IOException {
-        return activityChartService.getAverageDayByMonthImage();
+        return activityChartService.getSavedImage(Images.DAY_BY_MONTH_IMAGE);
     }
 
 

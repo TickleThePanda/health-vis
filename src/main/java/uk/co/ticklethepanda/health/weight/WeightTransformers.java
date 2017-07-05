@@ -1,5 +1,9 @@
 package uk.co.ticklethepanda.health.weight;
 
+import uk.co.ticklethepanda.health.weight.domain.entities.EntryPeriod;
+import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
+import uk.co.ticklethepanda.health.weight.dtos.WeightForDayDto;
+import uk.co.ticklethepanda.health.weight.dtos.WeightForPeriodDto;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 public class WeightTransformers {

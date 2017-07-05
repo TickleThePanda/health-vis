@@ -1,4 +1,6 @@
-package uk.co.ticklethepanda.health.weight;
+package uk.co.ticklethepanda.health.weight.dtos;
+
+import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -6,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PredictedWeight {
+public class PredictedWeightDto {
 
     private final Double value;
     private final LocalDate date;
@@ -15,27 +17,27 @@ public class PredictedWeight {
      * @param date  The date.
      * @param value The average value for the day.
      */
-    public PredictedWeight(LocalDate date, Double value) {
+    public PredictedWeightDto(LocalDate date, Double value) {
         this.date = date;
         this.value = value;
     }
 
-    public static List<PredictedWeight> calculateBasicAverage(List<Weight> weights) {
-        List<PredictedWeight> predictedWeights = new ArrayList<>();
+    public static List<PredictedWeightDto> calculateBasicAverage(List<Weight> weights) {
+        List<PredictedWeightDto> predictedWeightDtos = new ArrayList<>();
 
         for (Weight weight : weights) {
             if (weight.isFullDay()) {
-                predictedWeights.add(new PredictedWeight(weight.getDate(), weight.getAverage()));
+                predictedWeightDtos.add(new PredictedWeightDto(weight.getDate(), weight.getAverage()));
             } else if (weight.hasOnlyAmEntry()) {
-                predictedWeights.add(new PredictedWeight(weight.getDate(), weight.getWeightAm()));
+                predictedWeightDtos.add(new PredictedWeightDto(weight.getDate(), weight.getWeightAm()));
             } else if (weight.hasOnlyPmEntry()) {
-                predictedWeights.add(new PredictedWeight(weight.getDate(), weight.getWeightPm()));
+                predictedWeightDtos.add(new PredictedWeightDto(weight.getDate(), weight.getWeightPm()));
             }
         }
-        return predictedWeights;
+        return predictedWeightDtos;
     }
 
-    public static List<PredictedWeight> predictWeights(List<Weight> weights) {
+    public static List<PredictedWeightDto> predictWeights(List<Weight> weights) {
 
         Map<LocalDate, Weight> dateWeightMap = new HashMap<>();
 
@@ -46,13 +48,13 @@ public class PredictedWeight {
         Double overnightDiffAverage = calculateOvernightDiffAverage(weights, dateWeightMap);
         Double duringDayDiffAverage = calcualteDayDiff(weights);
 
-        List<PredictedWeight> predictedWeights = new ArrayList<>();
+        List<PredictedWeightDto> predictedWeightDtos = new ArrayList<>();
 
         for (Weight todaysWeight : weights) {
 
             if (todaysWeight.isFullDay()) {
                 double predictedWeight = (todaysWeight.getWeightAm() + todaysWeight.getWeightPm()) / 2.0;
-                predictedWeights.add(new PredictedWeight(todaysWeight.getDate(), predictedWeight));
+                predictedWeightDtos.add(new PredictedWeightDto(todaysWeight.getDate(), predictedWeight));
 
             } else if (todaysWeight.hasOnlyPmEntry()) {
                 Weight yesterdaysWeight = dateWeightMap.get(todaysWeight.getDate().minusDays(1));
@@ -64,7 +66,7 @@ public class PredictedWeight {
                         duringDayDiffAverage
                 );
 
-                predictedWeights.add(new PredictedWeight(todaysWeight.getDate(), predictedWeight));
+                predictedWeightDtos.add(new PredictedWeightDto(todaysWeight.getDate(), predictedWeight));
 
             } else if (todaysWeight.hasOnlyAmEntry()) {
                 Weight tomorrowsWeight = dateWeightMap.get(todaysWeight.getDate().plusDays(1));
@@ -76,11 +78,11 @@ public class PredictedWeight {
                         duringDayDiffAverage != null ? -duringDayDiffAverage : null
                 );
 
-                predictedWeights.add(new PredictedWeight(todaysWeight.getDate(), predictedWeight));
+                predictedWeightDtos.add(new PredictedWeightDto(todaysWeight.getDate(), predictedWeight));
             }
         }
 
-        return predictedWeights;
+        return predictedWeightDtos;
     }
 
     private static Double predictValue(Double before, Double after,
@@ -167,7 +169,7 @@ public class PredictedWeight {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PredictedWeight that = (PredictedWeight) o;
+        PredictedWeightDto that = (PredictedWeightDto) o;
 
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
         return date != null ? date.equals(that.date) : that.date == null;
@@ -183,7 +185,7 @@ public class PredictedWeight {
 
     @Override
     public String toString() {
-        return "PredictedWeight{" +
+        return "PredictedWeightDto{" +
                 "value=" + value +
                 ", date=" + date +
                 '}';
