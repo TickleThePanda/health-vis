@@ -34,14 +34,13 @@ public class WeightController {
         this.weightChartService = weightChartService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping()
     @ResponseBody
     public List<WeightForDayDto> getWeight() {
         return WEIGHT_TO_WEIGHT_DTO.transformList(weightService.getAllWeight());
     }
 
-    @RequestMapping(value = "/{date}/{period}",
-            method = RequestMethod.PUT)
+    @PutMapping(value = "/{date}/{period}")
     @ResponseBody
     public WeightForPeriodDto saveWeightForDate(
             @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -52,7 +51,7 @@ public class WeightController {
         return transformToPeriod(weight, entryPeriod);
     }
 
-    @RequestMapping(value = "/{date}/{period}", method = RequestMethod.GET)
+    @GetMapping(value = "/{date}/{period}")
     @ResponseBody
     public WeightForPeriodDto saveWeightForDate(
             @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -61,7 +60,7 @@ public class WeightController {
         return transformToPeriod(weight, entryPeriod);
     }
 
-    @RequestMapping(value = "/prediction", method = RequestMethod.GET)
+    @GetMapping(value = "/prediction")
     @ResponseBody
     public PredictedWeightLossDto predictWeightLoss() {
         List<Weight> weights = weightService.getAllWeight();
@@ -70,7 +69,7 @@ public class WeightController {
 
     }
 
-    @RequestMapping(value = "/prediction", params = {"since"}, method = RequestMethod.GET)
+    @GetMapping(value = "/prediction", params = {"since"})
     @ResponseBody
     public PredictedWeightLossDto predictWeightLoss(
             @RequestParam("since") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date

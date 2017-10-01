@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.fitbit;
+package uk.co.ticklethepanda.fitbit.client;
 
 import com.google.api.client.auth.oauth2.*;
 import com.google.api.client.auth.oauth2.Credential.Builder;
@@ -9,46 +9,35 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.client.util.store.DataStoreFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-@Component
-public class UserCredentialManager {
+public class FitbitUserCredentialManager {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private static final FileDataStoreFactory DATA_STORE;
     private static final HttpTransport transport = new NetHttpTransport();
     private static final JsonFactory gsonFactory = new GsonFactory();
-    private static final GenericUrl tokenEndPoint = new GenericUrl(FitbitApi.TOKEN_ENDPOINT);
+    private static final GenericUrl tokenEndPoint = new GenericUrl(FitbitApiConfig.TOKEN_ENDPOINT);
 
-    static {
-        FileDataStoreFactory factory = null;
-        try {
-            factory = new FileDataStoreFactory(new File("auths"));
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
 
-        DATA_STORE = factory;
-    }
-
-    private final ClientCredentials credentials;
+    private final FitbitClientCredentials credentials;
     private final BasicAuthentication basicAuthentication;
 
     private final AuthorizationCodeFlow flow;
 
     private final Builder credentialBuilder;
+    private final DataStoreFactory dataStoreFactory;
 
-    public UserCredentialManager(@Autowired ClientCredentials credentials) throws IOException {
+    public FitbitUserCredentialManager(
+            DataStoreFactory dataStoreFactory,
+            FitbitClientCredentials credentials) throws IOException {
 
+        this.dataStoreFactory = dataStoreFactory;
         this.credentials = credentials;
 
         this.basicAuthentication =
@@ -61,9 +50,9 @@ public class UserCredentialManager {
                 tokenEndPoint,
                 this.basicAuthentication,
                 this.credentials.getId(),
-                FitbitApi.AUTHORIZE_URL)
+                FitbitApiConfig.AUTHORIZE_URL)
                 .setScopes(Arrays.asList("activity"))
-                .setDataStoreFactory(DATA_STORE)
+                .setDataStoreFactory(dataStoreFactory)
                 .build();
 
         this.credentialBuilder = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
@@ -74,19 +63,21 @@ public class UserCredentialManager {
     }
 
     public Credential getCredentialsForUser(String userId) throws IOException {
-        final StoredCredential storedCred = this.flow.getCredentialDataStore().get("me");
+        final StoredCredential storedCred = this.flow.getCredentialDataStore().get(userId);
 
         return this.credentialBuilder
-                .addRefreshListener(new DataStoreCredentialRefreshListener(userId, DATA_STORE))
+                .addRefreshListener(new DataStoreCredentialRefreshListener(userId, dataStoreFactory))
                 .build()
                 .setAccessToken(storedCred.getAccessToken())
                 .setRefreshToken(storedCred.getRefreshToken());
     }
 
     public HttpRequestFactory getHttpRequestFactory(final Credential credential) {
-        return transport.createRequestFactory(request -> {
-            credential.initialize(request);
-        });
+        return transport.createRequestFactory(credential::initialize);
+    }
+
+    public HttpRequestFactory getHttpRequestFactoryForUser(String userId) throws IOException {
+        return getHttpRequestFactory(getCredentialsForUser(userId));
     }
 
     public void addVerifiedUser(String user, String verificationCode) throws IOException {
@@ -99,11 +90,7 @@ public class UserCredentialManager {
 
     }
 
-    public ClientCredentials getClientCredentials() {
+    public FitbitClientCredentials getClientCredentials() {
         return this.credentials;
-    }
-
-    public HttpRequestFactory getRequestFactoryForMe() throws IOException {
-        return getHttpRequestFactory(getCredentialsForUser("me"));
     }
 }

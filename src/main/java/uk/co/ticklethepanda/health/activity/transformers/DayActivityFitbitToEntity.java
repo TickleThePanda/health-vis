@@ -1,6 +1,6 @@
 package uk.co.ticklethepanda.health.activity.transformers;
 
-import uk.co.ticklethepanda.health.activity.fitbit.activity.FitbitIntradayActivity;
+import uk.co.ticklethepanda.fitbit.client.model.FitbitIntradayActivity;
 import uk.co.ticklethepanda.health.activity.domain.entities.MinuteActivity;
 import uk.co.ticklethepanda.utility.web.Transformer;
 

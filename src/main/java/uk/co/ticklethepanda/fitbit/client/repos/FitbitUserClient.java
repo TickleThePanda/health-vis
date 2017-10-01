@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.fitbit.user;
+package uk.co.ticklethepanda.fitbit.client.repos;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequestFactory;
@@ -9,17 +9,18 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.co.ticklethepanda.health.activity.fitbit.DaoException;
-import uk.co.ticklethepanda.health.activity.fitbit.FitbitApi;
+import uk.co.ticklethepanda.fitbit.client.FitbitClientException;
+import uk.co.ticklethepanda.fitbit.client.FitbitApiConfig;
+import uk.co.ticklethepanda.fitbit.client.model.FitbitUser;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class FitbitUserRepo {
+public class FitbitUserClient {
     private static final Logger logger = LogManager.getLogger();
 
-    private static final String FITBIT_USER_URL = FitbitApi.BASE_URL
+    private static final String FITBIT_USER_URL = FitbitApiConfig.BASE_URL
             + "/user/-/profile.json";
     private final HttpRequestFactory requestFactory;
 
@@ -31,11 +32,11 @@ public class FitbitUserRepo {
             .excludeFieldsWithoutExposeAnnotation()
             .create();
 
-    public FitbitUserRepo(HttpRequestFactory requestFactory) {
+    public FitbitUserClient(HttpRequestFactory requestFactory) {
         this.requestFactory = requestFactory;
     }
 
-    public FitbitUser getAuthorisedUser() throws DaoException {
+    public FitbitUser getAuthorisedUser() throws FitbitClientException {
         final GenericUrl url = new GenericUrl(FITBIT_USER_URL);
 
         try {
@@ -50,7 +51,7 @@ public class FitbitUserRepo {
             return GSON.fromJson(rootElement.get("user"), FitbitUser.class);
 
         } catch (final IOException e) {
-            throw new DaoException(e);
+            throw new FitbitClientException(e);
         }
     }
 }

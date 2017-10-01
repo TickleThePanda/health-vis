@@ -1,28 +1,30 @@
-package uk.co.ticklethepanda.health.activity.fitbit.ratelimit;
+package uk.co.ticklethepanda.fitbit.client.repos;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.gson.Gson;
-import uk.co.ticklethepanda.health.activity.fitbit.FitbitApi;
+import uk.co.ticklethepanda.fitbit.client.FitbitApiConfig;
+import uk.co.ticklethepanda.fitbit.client.model.RateLimitStatus;
 
 import java.io.IOException;
 
 /**
  *
  */
-public class RateLimitStatusRepo {
+public class RateLimitStatusClient {
 
     private static final Gson GSON = new Gson();
 
     private final HttpRequestFactory requestFactory;
 
-    public RateLimitStatusRepo(HttpRequestFactory requestFactory) {
+    public RateLimitStatusClient(HttpRequestFactory requestFactory) {
         this.requestFactory = requestFactory;
     }
 
     public RateLimitStatus getRateLimitStatus() throws IOException {
-        final GenericUrl url = new GenericUrl(FitbitApi.RATE_LIMIT_STATUS);
+        final GenericUrl url = new GenericUrl(
+                FitbitApiConfig.BASE_URL + "/account/clientAndViewerRateLimitStatus.json");
 
         HttpRequest request = requestFactory.buildGetRequest(url);
 

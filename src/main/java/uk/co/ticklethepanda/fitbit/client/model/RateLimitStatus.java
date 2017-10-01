@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.fitbit.ratelimit;
+package uk.co.ticklethepanda.fitbit.client.model;
 
 import com.google.gson.annotations.Expose;
 

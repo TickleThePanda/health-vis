@@ -1,46 +1,35 @@
 package uk.co.ticklethepanda.health;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import uk.co.ticklethepanda.health.jwt.JWTAuthenticationFilter;
 
 @Configuration
 public class SecurityContext extends WebSecurityConfigurerAdapter {
 
-    @Value("${security.basic.user.name}")
-    String userName;
-
-    @Value("${security.basic.user.password}")
-    String password;
-
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        System.out.println(userName + " " + password);
-
-        auth.inMemoryAuthentication()
-                .passwordEncoder(passwordEncoder())
-                .withUser(userName).password(password)
-                .roles("ADMIN");
-
-    }
+    private JWTAuthenticationFilter authenticationFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         http
-                .httpBasic().and()
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.HEAD).permitAll()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers(HttpMethod.GET).permitAll()
-                .anyRequest().hasRole("ADMIN");
+                .anyRequest().hasRole("admin")
+                .and()
+                .addFilterBefore(authenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
