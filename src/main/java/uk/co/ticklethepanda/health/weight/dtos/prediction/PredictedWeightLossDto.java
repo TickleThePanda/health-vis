@@ -1,4 +1,6 @@
-package uk.co.ticklethepanda.health.weight.dtos;
+package uk.co.ticklethepanda.health.weight.dtos.prediction;
+
+import uk.co.ticklethepanda.health.weight.dtos.log.WeightForDayDto;
 
 public class PredictedWeightLossDto {
     private WeightForDayDto heaviest;

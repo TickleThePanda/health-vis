@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.weight.dtos;
+package uk.co.ticklethepanda.health.weight.dtos.prediction;
 
 /**
  * Created by panda on 05/07/2017.

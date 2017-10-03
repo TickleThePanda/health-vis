@@ -1,8 +1,9 @@
-package uk.co.ticklethepanda.health.weight;
+package uk.co.ticklethepanda.health.weight.analysis;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
-import uk.co.ticklethepanda.health.weight.dtos.PredictedWeightDto;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class PredictedWeightDtoTest {
+public class WeightAnalysisEngineTest {
 
     private static final LocalDate today = LocalDate.now();
 
@@ -23,13 +24,20 @@ public class PredictedWeightDtoTest {
     private static final LocalDate tomorrow = today.plusDays(1);
     private static final LocalDate twoDaysAway = today.plusDays(2);
 
+    private WeightAnalysisEngine weightAnalysisEngine;
+
+    @BeforeEach
+    public void setup() {
+        this.weightAnalysisEngine = new WeightAnalysisEngine();
+    }
+
     @Test
     public void predictWeights_emptyList_emptyListReturned() {
         List<Weight> weights = new ArrayList<>();
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, is(new ArrayList<>()));
+        assertThat(weightAnalysisForDateDtos, is(new ArrayList<>()));
     }
 
     @Test
@@ -39,10 +47,10 @@ public class PredictedWeightDtoTest {
                 new Weight(today, 2.0, 4.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(today, 3.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(today, 3.0)
         ));
     }
 
@@ -55,12 +63,12 @@ public class PredictedWeightDtoTest {
                 new Weight(tomorrow, 3.0, 5.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(yesterday, 2.0),
-                new PredictedWeightDto(today, 3.0),
-                new PredictedWeightDto(tomorrow, 4.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(yesterday, 2.0),
+                new AnalysedWeight(today, 3.0),
+                new AnalysedWeight(tomorrow, 4.0)
         ));
     }
 
@@ -71,10 +79,10 @@ public class PredictedWeightDtoTest {
                 new Weight(today, null, 2.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(today, 2.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(today, 2.0)
         ));
     }
 
@@ -85,10 +93,10 @@ public class PredictedWeightDtoTest {
                 new Weight(today, 2.0, null)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(today, 2.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(today, 2.0)
         ));
     }
 
@@ -100,11 +108,11 @@ public class PredictedWeightDtoTest {
                 new Weight(today, 2.0, null)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(twoDaysAgo, 2.0),
-                new PredictedWeightDto(today, 3.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(twoDaysAgo, 2.0),
+                new AnalysedWeight(today, 3.0)
         ));
     }
 
@@ -117,12 +125,12 @@ public class PredictedWeightDtoTest {
                 new Weight(today, null, 3.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(twoDaysAgo, 2.0),
-                new PredictedWeightDto(yesterday, 2.0),
-                new PredictedWeightDto(today, 2.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(twoDaysAgo, 2.0),
+                new AnalysedWeight(yesterday, 2.0),
+                new AnalysedWeight(today, 2.0)
         ));
     }
 
@@ -135,12 +143,12 @@ public class PredictedWeightDtoTest {
                 new Weight(twoDaysAway, 1.0, 3.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(today, 2.0),
-                new PredictedWeightDto(tomorrow, 2.0),
-                new PredictedWeightDto(twoDaysAway, 2.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(today, 2.0),
+                new AnalysedWeight(tomorrow, 2.0),
+                new AnalysedWeight(twoDaysAway, 2.0)
         ));
     }
 
@@ -152,11 +160,11 @@ public class PredictedWeightDtoTest {
                 new Weight(tomorrow, 1.0, 3.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(today, 2.0),
-                new PredictedWeightDto(tomorrow, 2.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(today, 2.0),
+                new AnalysedWeight(tomorrow, 2.0)
         ));
     }
 
@@ -168,11 +176,11 @@ public class PredictedWeightDtoTest {
                 new Weight(today, null, 3.0)
         );
 
-        List<PredictedWeightDto> predictedWeightDtos = PredictedWeightDto.predictWeights(weights);
+        List<AnalysedWeight> weightAnalysisForDateDtos = weightAnalysisEngine.analyse(weights);
 
-        assertThat(predictedWeightDtos, hasItems(
-                new PredictedWeightDto(yesterday, 2.0),
-                new PredictedWeightDto(today, 2.0)
+        assertThat(weightAnalysisForDateDtos, hasItems(
+                new AnalysedWeight(yesterday, 2.0),
+                new AnalysedWeight(today, 2.0)
         ));
     }
 }

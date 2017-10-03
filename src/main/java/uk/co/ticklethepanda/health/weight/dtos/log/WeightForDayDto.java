@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.weight.dtos;
+package uk.co.ticklethepanda.health.weight.dtos.log;
 
 import java.time.LocalDate;
 

@@ -3,10 +3,14 @@ package uk.co.ticklethepanda.health.weight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import uk.co.ticklethepanda.health.weight.domain.entities.EntryPeriod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
-import uk.co.ticklethepanda.health.weight.dtos.*;
+import uk.co.ticklethepanda.health.weight.dtos.prediction.PredictedWeightLossDto;
+import uk.co.ticklethepanda.health.weight.dtos.prediction.PredictedWeightLossToTargetDto;
+import uk.co.ticklethepanda.health.weight.dtos.log.WeightForDayDto;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.time.LocalDate;
@@ -14,53 +18,22 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static java.util.Comparator.comparingDouble;
-import static uk.co.ticklethepanda.health.weight.WeightTransformers.WEIGHT_TO_WEIGHT_DTO;
-import static uk.co.ticklethepanda.health.weight.WeightTransformers.transformToPeriod;
 
 @Controller
-@RequestMapping(value = "/health/weight")
-public class WeightController {
+@RequestMapping(value = "/health/weight/prediction")
+public class WeightPredictionController {
 
     private final WeightService weightService;
-    private final WeightChartService weightChartService;
 
     private final static Transformer<Weight, WeightForDayDto> WEIGHT_TRANSFORMER =
             WeightTransformers.WEIGHT_TO_WEIGHT_DTO;
 
-    public WeightController(
-            @Autowired WeightService weightService,
-            @Autowired WeightChartService weightChartService) {
+    public WeightPredictionController(
+            @Autowired WeightService weightService) {
         this.weightService = weightService;
-        this.weightChartService = weightChartService;
     }
 
-    @GetMapping()
-    @ResponseBody
-    public List<WeightForDayDto> getWeight() {
-        return WEIGHT_TO_WEIGHT_DTO.transformList(weightService.getAllWeight());
-    }
-
-    @PutMapping(value = "/{date}/{period}")
-    @ResponseBody
-    public WeightForPeriodDto saveWeightForDate(
-            @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @PathVariable("period") EntryPeriod entryPeriod,
-            @RequestBody WeightValueDto weightInput) {
-        Weight weight = weightService.createWeightEntryForPeriod(date, entryPeriod, weightInput.weight);
-        weightChartService.triggerCache();
-        return transformToPeriod(weight, entryPeriod);
-    }
-
-    @GetMapping(value = "/{date}/{period}")
-    @ResponseBody
-    public WeightForPeriodDto saveWeightForDate(
-            @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @PathVariable("period") EntryPeriod entryPeriod) {
-        Weight weight = weightService.getWeightForDate(date);
-        return transformToPeriod(weight, entryPeriod);
-    }
-
-    @GetMapping(value = "/prediction")
+    @GetMapping
     @ResponseBody
     public PredictedWeightLossDto predictWeightLoss() {
         List<Weight> weights = weightService.getAllWeight();
@@ -69,7 +42,7 @@ public class WeightController {
 
     }
 
-    @GetMapping(value = "/prediction", params = {"since"})
+    @GetMapping(params = {"since"})
     @ResponseBody
     public PredictedWeightLossDto predictWeightLoss(
             @RequestParam("since") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
@@ -116,5 +89,4 @@ public class WeightController {
                 )
         );
     }
-
 }
