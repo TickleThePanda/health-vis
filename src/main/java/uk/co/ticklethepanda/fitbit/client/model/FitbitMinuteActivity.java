@@ -13,9 +13,9 @@ public class FitbitMinuteActivity {
 
     @SerializedName("value")
     @Expose
-    private final Double numberSteps;
+    private final Long numberSteps;
 
-    public FitbitMinuteActivity(LocalTime time, Double value) {
+    public FitbitMinuteActivity(LocalTime time, Long value) {
         this.time = time;
         this.numberSteps = value;
     }
@@ -23,7 +23,7 @@ public class FitbitMinuteActivity {
     /**
      * @return The value
      */
-    public Double getStepCount() {
+    public Long getStepCount() {
         return this.numberSteps;
     }
 

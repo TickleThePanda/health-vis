@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.domain.entities;
+package uk.co.ticklethepanda.health.activity.repositories;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -17,7 +17,7 @@ import static java.util.stream.Collectors.toList;
 @Entity
 @Table(name = "MINUTE_ACTIVITY",
         uniqueConstraints = @UniqueConstraint(columnNames = {"DATE", "TIME"}))
-public class MinuteActivity implements Serializable {
+public class ActivityEntity implements Serializable {
 
     @Id
     @GeneratedValue(generator = "increment")
@@ -32,19 +32,19 @@ public class MinuteActivity implements Serializable {
     private LocalTime time;
 
     @Column(name = "STEPS")
-    private double steps;
+    private Long steps;
 
-    public MinuteActivity() {
+    public ActivityEntity() {
 
     }
 
-    public MinuteActivity(LocalDate date, LocalTime time, double steps) {
+    public ActivityEntity(LocalDate date, LocalTime time, Long steps) {
         this.date = date;
         this.time = time;
         this.steps = steps;
     }
 
-    public MinuteActivity(LocalTime time, double steps) {
+    public ActivityEntity(LocalTime time, Long steps) {
         this.time = time;
         this.steps = steps;
     }
@@ -57,11 +57,11 @@ public class MinuteActivity implements Serializable {
         this.date = date;
     }
 
-    public double getSteps() {
+    public Long getSteps() {
         return steps;
     }
 
-    public void setSteps(double steps) {
+    public void setSteps(Long steps) {
         this.steps = steps;
     }
 
@@ -82,10 +82,10 @@ public class MinuteActivity implements Serializable {
     }
 
     public static boolean representsOneDay(
-            Collection<MinuteActivity> activity) {
+            Collection<ActivityEntity> activity) {
 
         List<LocalDate> dates = activity.stream()
-                .map(MinuteActivity::getDate)
+                .map(ActivityEntity::getDate)
                 .distinct()
                 .collect(toList());
 

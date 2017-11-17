@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity.dto;
+package uk.co.ticklethepanda.health.activity.controllers.dto;
 
 import java.time.LocalDate;
 

@@ -44,8 +44,8 @@ public class FitbitIntradayActivityClientTest {
         FitbitIntradayActivity activity = this.fitbitIntradayActivityClient.getDayActivity(LocalDate.now());
         assertThat(activity.getDate().toString(), CoreMatchers.equalTo("2014-09-05"));
         assertThat(activity.getIntradayMinuteActivitySeries().getElements(), CoreMatchers.hasItems(
-                new FitbitMinuteActivity(LocalTime.of(0, 0), 0.0),
-                new FitbitMinuteActivity(LocalTime.of(0, 1), 22.0)
+                new FitbitMinuteActivity(LocalTime.of(0, 0), 0L),
+                new FitbitMinuteActivity(LocalTime.of(0, 1), 22L)
         ));
     }
 

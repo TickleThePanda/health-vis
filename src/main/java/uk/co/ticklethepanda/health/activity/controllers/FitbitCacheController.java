@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.activity;
+package uk.co.ticklethepanda.health.activity.controllers;
 
 import com.google.api.client.http.HttpRequestFactory;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
@@ -21,7 +21,8 @@ import uk.co.ticklethepanda.fitbit.client.repos.FitbitIntradayActivityClient;
 import uk.co.ticklethepanda.fitbit.client.model.RateLimitStatus;
 import uk.co.ticklethepanda.fitbit.client.repos.RateLimitStatusClient;
 import uk.co.ticklethepanda.fitbit.client.repos.FitbitUserClient;
-import uk.co.ticklethepanda.health.activity.transformers.DayActivityFitbitToEntity;
+import uk.co.ticklethepanda.health.activity.services.ActivityService;
+import uk.co.ticklethepanda.health.activity.controllers.transformers.DayActivityFitbitToEntity;
 import uk.co.ticklethepanda.utility.date.LocalDateRange;
 
 import java.io.IOException;
