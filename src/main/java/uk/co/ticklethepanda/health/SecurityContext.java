@@ -2,6 +2,7 @@ package uk.co.ticklethepanda.health;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,13 +10,14 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import uk.co.ticklethepanda.health.jwt.JWTAuthenticationFilter;
+import uk.co.ticklethepanda.spring.auth.jwt.JwtAuthenticationFilter;
 
 @Configuration
+@ComponentScan("uk.co.ticklethepanda")
 public class SecurityContext extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private JWTAuthenticationFilter authenticationFilter;
+    private JwtAuthenticationFilter authenticationFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

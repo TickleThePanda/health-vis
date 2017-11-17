@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.0.RELEASE</version>
+        <version>1.5.6.RELEASE</version>
     </parent>
 
     <groupId>uk.co.ticklethepanda.activity.fitbit</groupId>
@@ -36,9 +36,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.auth0</groupId>
-            <artifactId>java-jwt</artifactId>
-            <version>3.2.0</version>
+            <groupId>uk.co.ticklethepanda</groupId>
+            <artifactId>spring-jwt-authentication-filter</artifactId>
+            <version>0.0.1</version>
         </dependency>
 
         <dependency>
