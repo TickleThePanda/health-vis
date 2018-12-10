@@ -1,19 +1,19 @@
 package uk.co.ticklethepanda.health.weight.dtos.prediction;
 
-import uk.co.ticklethepanda.health.weight.dtos.log.WeightForDayDto;
+import uk.co.ticklethepanda.health.weight.dtos.log.AverageWeightDto;
 
 public class PredictedWeightLossDto {
-    private WeightForDayDto heaviest;
-    private WeightForDayDto lightest;
-    private WeightForDayDto latest;
+    private AverageWeightDto heaviest;
+    private AverageWeightDto lightest;
+    private AverageWeightDto latest;
     private double lossPerDay;
     private PredictedWeightLossToTargetDto target;
     private PredictedWeightLossToTargetDto intermediateTarget;
 
     public PredictedWeightLossDto(
-            WeightForDayDto heaviest,
-            WeightForDayDto lightest,
-            WeightForDayDto latest,
+            AverageWeightDto heaviest,
+            AverageWeightDto lightest,
+            AverageWeightDto latest,
             double lossPerDay,
             PredictedWeightLossToTargetDto target,
             PredictedWeightLossToTargetDto intermediateTarget) {
@@ -27,15 +27,15 @@ public class PredictedWeightLossDto {
     }
 
 
-    public WeightForDayDto getHeaviest() {
+    public AverageWeightDto getHeaviest() {
         return heaviest;
     }
 
-    public WeightForDayDto getLightest() {
+    public AverageWeightDto getLightest() {
         return lightest;
     }
 
-    public WeightForDayDto getLatest() {
+    public AverageWeightDto getLatest() {
         return latest;
     }
 
@@ -52,15 +52,15 @@ public class PredictedWeightLossDto {
     }
 
 
-    public void setHeaviest(WeightForDayDto heaviest) {
+    public void setHeaviest(AverageWeightDto heaviest) {
         this.heaviest = heaviest;
     }
 
-    public void setLightest(WeightForDayDto lightest) {
+    public void setLightest(AverageWeightDto lightest) {
         this.lightest = lightest;
     }
 
-    public void setLatest(WeightForDayDto latest) {
+    public void setLatest(AverageWeightDto latest) {
         this.latest = latest;
     }
 

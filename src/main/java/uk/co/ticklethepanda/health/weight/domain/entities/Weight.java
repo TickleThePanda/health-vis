@@ -108,4 +108,8 @@ public class Weight implements Serializable {
             return weightPm;
         }
     }
+
+    public boolean hasNoEntries() {
+        return weightAm == null && weightPm == null;
+    }
 }

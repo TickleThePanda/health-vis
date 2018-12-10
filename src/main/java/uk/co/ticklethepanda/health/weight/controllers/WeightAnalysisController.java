@@ -1,4 +1,4 @@
-package uk.co.ticklethepanda.health.weight;
+package uk.co.ticklethepanda.health.weight.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -7,15 +7,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import uk.co.ticklethepanda.health.weight.WeightService;
+import uk.co.ticklethepanda.health.weight.domain.model.AverageWeight;
+import uk.co.ticklethepanda.health.weight.dtos.log.AverageWeightDto;
+import uk.co.ticklethepanda.health.weight.transformers.WeightTransformers;
 import uk.co.ticklethepanda.health.weight.analysis.AnalysedWeight;
 import uk.co.ticklethepanda.health.weight.analysis.WeightAnalysisEngine;
 import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
 import uk.co.ticklethepanda.health.weight.dtos.analysis.WeightAnalysisForDateDto;
-import uk.co.ticklethepanda.health.weight.dtos.log.WeightForDayDto;
 import uk.co.ticklethepanda.utility.web.Transformer;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static uk.co.ticklethepanda.health.weight.transformers.WeightTransformers.AVERAGE_WEIGHT_TO_DTO;
 
 @Controller
 @RequestMapping(value = "/health/weight")
@@ -44,25 +49,14 @@ public class WeightAnalysisController {
         return WEIGHT_TRANSFORMER.transformList(analysedWeights);
     }
 
-    @GetMapping(params = {"since"})
+    @GetMapping(params="period")
     @ResponseBody
-    public List<WeightAnalysisForDateDto> getWeightAnalysis(
-            @RequestParam("since") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate since
+    public List<AverageWeightDto> getWeightForPeriod(
+            @RequestParam("period") int periodInDays
     ) {
-        List<Weight> weights = weightService.getWeightWithinDateRange(since, null);
+        List<AverageWeight> averageWeightForPeriods =
+                weightService.getAverageWeightForEachPeriod(periodInDays);
 
-        List<AnalysedWeight> analysedWeights = weightAnalysisEngine.analyse(weights);
-
-        return WEIGHT_TRANSFORMER.transformList(analysedWeights);
-    }
-
-    @GetMapping(params = {"recent"})
-    @ResponseBody
-    public List<WeightAnalysisForDateDto> getRecentWeightAnalysis() {
-        List<Weight> weights = weightService.getWeightWithinDateRange(LocalDate.now().minusMonths(1) , null);
-
-        List<AnalysedWeight> analysedWeights = weightAnalysisEngine.analyse(weights);
-
-        return WEIGHT_TRANSFORMER.transformList(analysedWeights);
+        return AVERAGE_WEIGHT_TO_DTO.transformList(averageWeightForPeriods);
     }
 }

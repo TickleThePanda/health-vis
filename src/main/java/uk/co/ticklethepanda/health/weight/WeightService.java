@@ -5,13 +5,23 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.co.ticklethepanda.health.weight.domain.entities.EntryPeriod;
+import uk.co.ticklethepanda.health.weight.domain.model.AverageWeight;
+import uk.co.ticklethepanda.health.weight.domain.model.EntryMeridiemPeriod;
 import uk.co.ticklethepanda.health.weight.domain.entities.Weight;
 import uk.co.ticklethepanda.health.weight.domain.repositories.WeightRepo;
+import uk.co.ticklethepanda.utility.date.LocalDateRange;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.*;
+import static uk.co.ticklethepanda.utility.date.LocalDateRanges.*;
+import static uk.co.ticklethepanda.utility.date.LocalDateRanges.From.from;
+import static uk.co.ticklethepanda.utility.date.LocalDateRanges.Until.*;
 
 @Service
 public class WeightService {
@@ -40,13 +50,13 @@ public class WeightService {
         return weightRepo.findByDate(date);
     }
 
-    public Weight createWeightEntryForPeriod(LocalDate date, EntryPeriod entryPeriod, Double weightValue) {
+    public Weight createWeightEntryForPeriod(LocalDate date, EntryMeridiemPeriod entryMeridiemPeriod, Double weightValue) {
         Weight weight = weightRepo.findByDate(date);
         if (weight == null) {
             weight = new Weight(date, null, null);
         }
 
-        switch (entryPeriod) {
+        switch (entryMeridiemPeriod) {
             case AM:
                 weight.setWeightAm(weightValue);
                 break;
@@ -57,7 +67,11 @@ public class WeightService {
                 throw new InvalidParameterException();
         }
 
-        weightRepo.save(weight);
+        if(weight.hasNoEntries() && weight.getId() != null) {
+            weightRepo.delete(weight.getId());
+        } else {
+            weightRepo.save(weight);
+        }
 
         return weight;
     }
@@ -70,7 +84,7 @@ public class WeightService {
         return weightTarget;
     }
 
-    public double getIntermediateWeightTargetForWeight(Weight weight) {
+    public double getIntermediateWeightTargetForWeight(AverageWeight weight) {
         double steps = Math.floor((weight.getAverage() - weightTarget) / weightTargetIntermediateStep);
 
         return weightTarget + weightTargetIntermediateStep * steps;
@@ -78,5 +92,50 @@ public class WeightService {
 
     public List<Weight> getWeightWithinDateRange(LocalDate start, LocalDate end) {
         return weightRepo.findWithinDateRange(start, end);
+    }
+
+    public List<AverageWeight> getAverageWeightForEachPeriodInRange(int periodInDays, LocalDate filterStart, LocalDate filterEnd) {
+        List<Weight> weights = weightRepo.findWithinDateRange(filterStart, filterEnd);
+        List<AverageWeight> averageWeights = new ArrayList<>();
+
+        LocalDate beginning = weights.stream()
+                .map(Weight::getDate)
+                .min(Comparator.naturalOrder())
+                .get();
+
+        LocalDate end = LocalDate.now();
+
+        for (LocalDateRange dateRange : every(periodInDays, DAYS, from(beginning), until(end))) {
+
+            List<Weight> weightsInPeriod = weights.stream()
+                    .filter(w -> dateRange.contains(w.getDate()))
+                    .collect(Collectors.toList());
+
+            if(weightsInPeriod.size() > 0) {
+
+                double average = weightsInPeriod.stream()
+                        .mapToDouble(Weight::getAverage)
+                        .average()
+                        .getAsDouble();
+
+                int count = weightsInPeriod.size();
+
+                averageWeights.add(
+                        new AverageWeight(
+                                dateRange.getStart(),
+                                dateRange.getEnd().minusDays(1), // minus 1 day because range is exclusive
+                                average,
+                                count)
+                );
+            }
+
+        }
+
+        return averageWeights;
+
+    }
+
+    public List<AverageWeight> getAverageWeightForEachPeriod(int periodInDays) {
+        return getAverageWeightForEachPeriodInRange(periodInDays, null, null);
     }
 }
