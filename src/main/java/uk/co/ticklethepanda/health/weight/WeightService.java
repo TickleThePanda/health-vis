@@ -95,7 +95,16 @@ public class WeightService {
     }
 
     public List<AverageWeight> getAverageWeightForEachPeriodInRange(int periodInDays, LocalDate filterStart, LocalDate filterEnd) {
-        List<Weight> weights = weightRepo.findWithinDateRange(filterStart, filterEnd);
+        List<Weight> weights = null;
+        if (filterStart == null && filterEnd == null) {
+            weights = weightRepo.findWhereNotEmpty();
+        } else if (filterStart != null && filterEnd == null) {
+            weights = weightRepo.findAfterDate(filterStart);
+        } else if (filterStart == null && filterEnd != null) {
+            weights = weightRepo.findBeforeDate(filterEnd);
+        } else {
+            weights = weightRepo.findWithinDateRange(filterStart, filterEnd);
+        }
         List<AverageWeight> averageWeights = new ArrayList<>();
 
         LocalDate beginning = weights.stream()

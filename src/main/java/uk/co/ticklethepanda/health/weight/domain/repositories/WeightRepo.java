@@ -32,4 +32,18 @@ public interface WeightRepo extends JpaRepository<Weight, Long> {
     List<Weight> findWithinDateRange(
             @Param("startDate") LocalDate start,
             @Param("endDate") LocalDate end);
+
+    @Query("" +
+            "  from Weight as weight " +
+            " where (weight.date >= :startDate)" +
+            "   and (weight.weightAm is not null or weight.weightPm is not null)" +
+            " order by weight.date asc")
+    List<Weight> findAfterDate(@Param("startDate") LocalDate filterStart);
+
+    @Query("" +
+            "  from Weight as weight " +
+            " where (weight.date <= :endDate)" +
+            "   and (weight.weightAm is not null or weight.weightPm is not null)" +
+            " order by weight.date asc")
+    List<Weight> findBeforeDate(@Param("endDate") LocalDate filterEnd);
 }
