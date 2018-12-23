@@ -1,21 +1,19 @@
-#image files
-*.png
-/cached
-
-#imported libraries
-*.jar
-modules/*
-
-#builds
-bin/*
-
-#personal files
-config.properties
-auths/
-
-#ide files
-.settings/*
-.idea/*
+*.csv
+*.dat
 *.iml
+*.log
+*.out
+*.pid
+*.seed
+*.sublime-*
+*.swo
+*.swp
+*.tgz
+*.xml
+.DS_Store
+.idea
 .project
-/target/
+.strong-pm
+coverage
+node_modules
+npm-debug.log

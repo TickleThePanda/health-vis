@@ -1,0 +1,26 @@
+{
+  "name": "health-analysis",
+  "version": "1.0.0",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "express-jwt": "^5.3.1",
+    "pg": "^7.7.1",
+    "pg-promise": "^8.5.4"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "",
+    "url": ""
+  },
+  "license": "MIT",
+  "description": "health-analysis"
+}
