@@ -14,7 +14,8 @@ const port = process.env.PORT || 8080;
 
 const whitelist = [
   /https:\/\/ticklethepanda.co.uk/,
-  /https:\/\/.*ticklethepanda.netlify.com/
+  /https:\/\/.*ticklethepanda.netlify.com/,
+  /https:\/\/ticklethepanda.dev/
 ];
 
 const corsOptions = {
