@@ -78,6 +78,8 @@ app.get('/weight', (req, res) => {
       const values = data
         .map(d => ({
           date: d.date,
+          am: d.weightAm,
+          pm: d.weightPm,
           average: averageExcludingNulls([d.weightAm, d.weightPm]),
         }));
       
@@ -86,6 +88,8 @@ app.get('/weight', (req, res) => {
       for (let value of values) {
         const date = value.date;
         const weightAverage = value.average;
+        const weightAm = value.am;
+        const weightPm = value.pm;
 
         const daysSinceEpoch = Math.trunc(Date.parse(date) / oneDayInMs);
         const daysOffset = daysSinceEpoch % period;
@@ -96,25 +100,40 @@ app.get('/weight', (req, res) => {
         if(!inPeriod[startOfPeriod]) {
           inPeriod[startOfPeriod] = {
             sum: 0,
-            count: 0
+            count: 0,
+            sumAm: 0,
+            countAm: 0,
+            sumPm: 0,
+            countPm: 0
           };
         }
 
         inPeriod[startOfPeriod].sum += weightAverage;
         inPeriod[startOfPeriod].count++;
+
+        if (weightAm !== null) {
+          inPeriod[startOfPeriod].sumAm += weightAm;
+          inPeriod[startOfPeriod].countAm++;
+        }
+
+        if (weightPm !== null) {
+          inPeriod[startOfPeriod].sumPm += weightPm;
+          inPeriod[startOfPeriod].countPm++;
+        }
       }
 
       const results = [];
 
-      for (let entry of Object.entries(inPeriod)) {
-        const startOfPeriod = entry[0];
-        const sum = entry[1].sum;
-        const count = entry[1].count;
+      for (let {startOfPeriod, stats} of Object.entries(inPeriod)) {
 
         results.push({
           start: startOfPeriod,
-          average: sum / count,
-          count: count
+          average: stats.sum / stats.count,
+          count: stats.count,
+          averageAm: stats.countAm > 0 ? stats.sumAm : null,
+          countAm: stats.countAm,
+          averagePm: stats.countPm > 0 ? stats.sumPm : null,
+          countPm: stats.countPm
         });
       }
 
