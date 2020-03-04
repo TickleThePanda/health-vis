@@ -13,7 +13,7 @@ const secret = process.env.HEALTH_APP_SECRET_KEY;
 const port = process.env.PORT || 8080;
 
 const whitelist = [
-  /^https?:\/\/(((\w|-)*\.)*ticklethepanda\.(co\.uk|dev|netlify\.com)|localhost)$/
+  /^https?:\/\/(((\w|-)*\.)*ticklethepanda\.(co\.uk|dev|netlify\.com)|localhost:?[0-9]*)$/
 ];
 
 const corsOptions = {
