@@ -130,9 +130,9 @@ app.get('/weight', (req, res) => {
           start: startOfPeriod,
           average: stats.sum / stats.count,
           count: stats.count,
-          averageAm: stats.countAm > 0 ? stats.sumAm : null,
+          averageAm: stats.countAm > 0 ? stats.sumAm / stats.countAm : null,
           countAm: stats.countAm,
-          averagePm: stats.countPm > 0 ? stats.sumPm : null,
+          averagePm: stats.countPm > 0 ? stats.sumPm / stats.countPm : null,
           countPm: stats.countPm
         });
       }
