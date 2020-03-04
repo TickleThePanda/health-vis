@@ -124,7 +124,7 @@ app.get('/weight', (req, res) => {
 
       const results = [];
 
-      for (let {startOfPeriod, stats} of Object.entries(inPeriod)) {
+      for (let [startOfPeriod, stats] of Object.entries(inPeriod)) {
 
         results.push({
           start: startOfPeriod,
