@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "**/*": {
+      "runtime": "16.x",
+      "includeFiles": "server/repo/weight.js"
+    }
+  }
+}

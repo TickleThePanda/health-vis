@@ -1,88 +1,84 @@
-const bodyParser = require('body-parser');
-const cors = require('cors');
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
-const weightRepo = require('./repo/weight.js');
+const weightRepo = require("./repo/weight.js");
 
-const express = require('express');
+const express = require("express");
 const app = express();
 
-const jwt = require('express-jwt');
+const jwt = require("express-jwt");
 
 const secret = process.env.HEALTH_APP_SECRET_KEY;
 
 const port = process.env.PORT || 8080;
 
 const whitelist = [
-  /^https?:\/\/(((\w|-)*\.)*ticklethepanda\.(co\.uk|dev|netlify\.com)|localhost:?[0-9]*)$/
+  /^https?:\/\/(((\w|-)*\.)*ticklethepanda\.(co\.uk|dev|netlify\.com)|localhost:?[0-9]*)$/,
 ];
 
 const corsOptions = {
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     if (!origin) {
       callback(null, true);
-    } else if (whitelist.some(r => origin.match(r))) {
+    } else if (whitelist.some((r) => origin.match(r))) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true
-}
+  credentials: true,
+};
 
 const replaceDate = function replaceDate(key, value) {
-
-  if(this[key] instanceof Date) {
+  if (this[key] instanceof Date) {
     value = this[key].toISOString().substring(0, 10);
   }
-  
-  return value;
-}
 
-app.set('json replacer', replaceDate);
-app.set('json spaces', 2);
+  return value;
+};
+
+app.set("json replacer", replaceDate);
+app.set("json spaces", 2);
 app.use(bodyParser.json());
 
 app.use(cors(corsOptions));
 
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
-app.get('/weight/log/', (req, res) => {
-  weightRepo.getAllWeight()
-    .then(data => {
-      res.json(data);
-    });
+app.get("/weight/log/", (req, res) => {
+  weightRepo.getAllWeight().then((data) => {
+    res.json(data);
+  });
 });
 
 function averageExcludingNulls(arr) {
   let sum = 0;
   let count = 0;
-  
+
   for (let val of arr) {
     if (val !== null) {
       sum += val;
       count++;
     }
   }
-  
-  return sum / count;
 
+  return sum / count;
 }
 
-app.get('/weight', (req, res) => {
-
+app.get("/weight", (req, res) => {
   const oneDayInMs = 1000 * 60 * 60 * 24;
   const period = req.query.period;
 
-  weightRepo.getAllWeight()
-    .then(data => {
-      const values = data
-        .map(d => ({
-          date: d.date,
-          am: d.weightAm,
-          pm: d.weightPm,
-          average: averageExcludingNulls([d.weightAm, d.weightPm]),
-        }));
-      
+  weightRepo
+    .getAllWeight()
+    .then((data) => {
+      const values = data.map((d) => ({
+        date: d.date,
+        am: d.weightAm,
+        pm: d.weightPm,
+        average: averageExcludingNulls([d.weightAm, d.weightPm]),
+      }));
+
       const inPeriod = {};
 
       for (let value of values) {
@@ -94,17 +90,20 @@ app.get('/weight', (req, res) => {
         const daysSinceEpoch = Math.trunc(Date.parse(date) / oneDayInMs);
         const daysOffset = daysSinceEpoch % period;
 
-        const startOfPeriod = new Date((daysSinceEpoch - daysOffset) * oneDayInMs)
-                .toISOString().substring(0, 10);
+        const startOfPeriod = new Date(
+          (daysSinceEpoch - daysOffset) * oneDayInMs
+        )
+          .toISOString()
+          .substring(0, 10);
 
-        if(!inPeriod[startOfPeriod]) {
+        if (!inPeriod[startOfPeriod]) {
           inPeriod[startOfPeriod] = {
             sum: 0,
             count: 0,
             sumAm: 0,
             countAm: 0,
             sumPm: 0,
-            countPm: 0
+            countPm: 0,
           };
         }
 
@@ -125,7 +124,6 @@ app.get('/weight', (req, res) => {
       const results = [];
 
       for (let [startOfPeriod, stats] of Object.entries(inPeriod)) {
-
         results.push({
           start: startOfPeriod,
           average: stats.sum / stats.count,
@@ -133,20 +131,19 @@ app.get('/weight', (req, res) => {
           averageAm: stats.countAm > 0 ? stats.sumAm / stats.countAm : null,
           countAm: stats.countAm,
           averagePm: stats.countPm > 0 ? stats.sumPm / stats.countPm : null,
-          countPm: stats.countPm
+          countPm: stats.countPm,
         });
       }
 
       return results;
     })
-    .then(data => {
+    .then((data) => {
       res.json(data);
     });
-})
+});
 
-app.put('/weight/log/:date/:meridiam', jwt({ secret: secret }), (req, res) => {
-
-  if (!req.user.roles.includes('admin')) {
+app.put("/weight/log/:date/:meridiam", jwt({ secret: secret }), (req, res) => {
+  if (!req.user.roles.includes("admin")) {
     res.send(401);
     return;
   }
@@ -156,7 +153,7 @@ app.put('/weight/log/:date/:meridiam', jwt({ secret: secret }), (req, res) => {
   const meridiam = req.params.meridiam;
   const weight = req.body.weight !== "" ? req.body.weight : null;
 
-  if (meridiam !== 'AM' && meridiam !== 'PM') {
+  if (meridiam !== "AM" && meridiam !== "PM") {
     throw '"meridiam" must either be "AM" or "PM"';
   }
 
@@ -164,12 +161,9 @@ app.put('/weight/log/:date/:meridiam', jwt({ secret: secret }), (req, res) => {
     throw '"date" was invalid';
   }
 
-  weightRepo.saveWeightForMeridiam(dateString, meridiam, weight)
-    .then(data => res.json(data));
-
+  weightRepo
+    .saveWeightForMeridiam(dateString, meridiam, weight)
+    .then((data) => res.json(data));
 });
 
-app.listen(port, () =>
-  console.log(`App started on ${port}`)
-);
-
+module.exports = app;
