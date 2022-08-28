@@ -1,7 +1,7 @@
 {
   "functions": {
     "**/*": {
-      "runtime": "16.x",
+      "runtime": "@vercel/node@2.5.11",
       "includeFiles": "server/repo/weight.js"
     }
   }
