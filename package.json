@@ -5,12 +5,15 @@
   "engines": {
     "node": ">=16"
   },
+  "type": "module",
   "scripts": {
     "start": "node server/index.js"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.159.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
+    "date-fns": "^2.29.2",
     "express": "^4.16.4",
     "express-jwt": "^7.7.5",
     "pg": "^7.7.1",
@@ -21,5 +24,10 @@
     "url": ""
   },
   "license": "MIT",
-  "description": "health-analysis"
+  "description": "health-analysis",
+  "devDependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "typescript": "^4.8.2"
+  }
 }
