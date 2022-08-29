@@ -6,7 +6,7 @@
   },
   "rewrites": [
     {
-      "source": "/weight/(.*)",
+      "source": "/weight(.*)",
       "destination": "/api/index.ts"
     }
   ]

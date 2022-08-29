@@ -1,5 +1,4 @@
 import bodyParser from "body-parser";
-import cors from "cors";
 
 import {
   DatePutRequest,
@@ -9,35 +8,20 @@ import {
   WeightEntry,
 } from "./repo/weight";
 
-import express from "express";
+import express, { Handler } from "express";
 import {
   Application,
   Request,
   Response,
   RequestHandler as ExpressRequestHandler,
 } from "express";
+
 const app: Application = express();
 
 import { expressjwt as jwt } from "express-jwt";
+import { logger, cors, noCache, requireAdmin } from "./middleware";
 
 const secret = process.env.HEALTH_APP_SECRET_KEY;
-
-const whitelist = [
-  /^https?:\/\/(((\w|-)*\.)*ticklethepanda\.(co\.uk|dev|netlify\.com)|localhost:?[0-9]*)$/,
-];
-
-const corsOptions: cors.CorsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) {
-      callback(null, true);
-    } else if (whitelist.some((r) => origin.match(r))) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-};
 
 function replaceDate(key: string, value: string) {
   if (this[key] instanceof Date) {
@@ -47,36 +31,23 @@ function replaceDate(key: string, value: string) {
   return value;
 }
 
-const requireAdmin: ExpressRequestHandler = (
-  req: RequestWithUser,
-  res: Response,
-  next
-) => {
-  if (!req.auth.roles.includes("admin")) {
-    res.send(401);
-  } else {
-    next();
-  }
-};
-
 app.set("json replacer", replaceDate);
 app.set("json spaces", 2);
 app.use(bodyParser.json());
-app.use(jwt({ secret: secret, algorithms: ["HS256"] }));
-app.use(requireAdmin);
 
-app.use(cors(corsOptions));
+app.use(logger());
 
-app.options("*", cors(corsOptions));
+app.use(cors());
+app.options("*", cors());
+
+app.use(
+  jwt({ secret: secret, algorithms: ["HS256"], credentialsRequired: false })
+);
+app.use(requireAdmin());
+app.use(noCache());
 
 interface TypedRequestBody<T> extends Request {
   body: T;
-}
-
-interface RequestWithUser extends Request {
-  auth: {
-    roles: string[];
-  };
 }
 
 type RequestHandler<T> = (

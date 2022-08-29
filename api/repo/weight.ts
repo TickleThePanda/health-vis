@@ -37,7 +37,6 @@ export async function getAllWeight(): Promise<WeightEntry[]> {
   });
 
   const { Items: items } = await client.send(command);
-  console.log(items);
 
   const results: Record<string, Record<string, number>> = {};
 
@@ -86,8 +85,6 @@ export async function saveAllWeights(requests: DatePutRequest[]) {
       )
     ),
   ];
-
-  console.log(JSON.stringify(requestChunks, null, 2));
 
   await Promise.all(
     requestChunks.map((requests) =>
