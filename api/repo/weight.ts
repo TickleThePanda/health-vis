@@ -47,7 +47,7 @@ export async function getAllWeight(): Promise<WeightEntry[]> {
       results[date] = {};
     }
 
-    results[date][period] = parseInt(item.Weight.S);
+    results[date][period] = parseFloat(item.Weight.S);
   }
 
   return Object.entries(results)
