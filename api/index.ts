@@ -75,12 +75,12 @@ app.get(
   })
 );
 
-function averageExcludingNulls(arr: (number | null)[]) {
+function average(arr: (number | null | undefined)[]) {
   let sum = 0;
   let count = 0;
 
   for (let val of arr) {
-    if (val !== null) {
+    if (val !== null && val !== undefined) {
       sum += val;
       count++;
     }
@@ -104,7 +104,7 @@ app.get(
       date: d.date,
       am: d.weightAm,
       pm: d.weightPm,
-      average: averageExcludingNulls([d.weightAm, d.weightPm]),
+      average: average([d.weightAm, d.weightPm]),
     }));
 
     const inPeriod: Record<
@@ -141,12 +141,12 @@ app.get(
       inPeriod[startOfPeriod].sum += average;
       inPeriod[startOfPeriod].count++;
 
-      if (am !== null) {
+      if (am !== null && am !== undefined) {
         inPeriod[startOfPeriod].sumAm += am;
         inPeriod[startOfPeriod].countAm++;
       }
 
-      if (pm !== null) {
+      if (pm !== null && pm !== undefined) {
         inPeriod[startOfPeriod].sumPm += pm;
         inPeriod[startOfPeriod].countPm++;
       }
