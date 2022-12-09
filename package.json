@@ -14,7 +14,7 @@
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "date-fns": "^2.29.2",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-jwt": "^7.7.5",
     "pg": "^7.7.1",
     "pg-promise": "^8.5.4"
