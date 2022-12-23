@@ -15,7 +15,7 @@
     "cors": "^2.8.5",
     "date-fns": "^2.29.2",
     "express": "^4.16.4",
-    "express-jwt": "^7.7.5",
+    "express-jwt": "^8.2.0",
     "pg": "^7.7.1",
     "pg-promise": "^8.5.4"
   },
