@@ -89,6 +89,40 @@ function average(arr: (number | null | undefined)[]) {
   return sum / count;
 }
 
+function roundTo(num: number, places: number) {
+  let placesRounded = Math.round(places);
+  let placesMult = Math.pow(10, placesRounded);
+
+  return Math.round(num * placesMult + Number.EPSILON) / placesMult;
+}
+
+function createPredictor(data: WeightEntry[]) {
+  const onlyFullEntries = data.filter(e => e.weightAm !== undefined && e.weightPm !== undefined);
+  console.log(onlyFullEntries)
+  const stats = onlyFullEntries
+    .map(e => e.weightPm - e.weightAm)
+    .reduce(({ count, sum }, diff) => ({
+      count: count + 1,
+      sum: sum + (isNaN(diff) ? 0 : diff )
+    }), { count: 0, sum: 0 })
+  
+  console.log(stats);
+  
+  const averageDiff = roundTo(stats.sum / stats.count, 1);
+  console.log(averageDiff);
+
+  return (actualAm: number | undefined, actualPm: number | undefined) => {
+    if (actualAm === undefined && actualPm === undefined) {
+      return undefined;
+    }
+
+    const am = actualAm === undefined ? actualPm - averageDiff : actualAm;
+    const pm = actualPm === undefined ? actualAm + averageDiff : actualPm;
+
+    return average([am, pm]);
+  }
+}
+
 app.get(
   "/weight",
   handleError(async (req, res) => {
@@ -100,11 +134,14 @@ app.get(
 
     const data = await getAllWeight();
 
+    const predictor = createPredictor(data);
+
     const values = data.map((d) => ({
       date: d.date,
       am: d.weightAm,
       pm: d.weightPm,
       average: average([d.weightAm, d.weightPm]),
+      presumed: predictor(d.weightAm, d.weightPm)
     }));
 
     const inPeriod: Record<
@@ -112,6 +149,7 @@ app.get(
       {
         sum: number;
         count: number;
+        sumPresumed: number;
         sumAm: number;
         countAm: number;
         sumPm: number;
@@ -119,7 +157,7 @@ app.get(
       }
     > = {};
 
-    for (let { date, am, pm, average } of values) {
+    for (let { date, am, pm, average, presumed } of values) {
       const daysSinceEpoch = Math.trunc(Date.parse(date) / oneDayInMs);
       const daysOffset = daysSinceEpoch % period;
 
@@ -131,6 +169,7 @@ app.get(
         inPeriod[startOfPeriod] = {
           sum: 0,
           count: 0,
+          sumPresumed: 0,
           sumAm: 0,
           countAm: 0,
           sumPm: 0,
@@ -140,6 +179,7 @@ app.get(
 
       inPeriod[startOfPeriod].sum += average;
       inPeriod[startOfPeriod].count++;
+      inPeriod[startOfPeriod].sumPresumed += presumed;
 
       if (am !== null && am !== undefined) {
         inPeriod[startOfPeriod].sumAm += am;
@@ -158,6 +198,7 @@ app.get(
       results.push({
         start: startOfPeriod,
         average: stats.sum / stats.count,
+        averagePresumed: stats.sumPresumed / stats.count,
         count: stats.count,
         averageAm: stats.countAm > 0 ? stats.sumAm / stats.countAm : null,
         countAm: stats.countAm,
@@ -230,3 +271,4 @@ app.post(
 );
 
 export default app;
+
