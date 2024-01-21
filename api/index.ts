@@ -150,6 +150,7 @@ app.get(
         sum: number;
         count: number;
         sumPresumed: number;
+        countPresumed: number;
         sumAm: number;
         countAm: number;
         sumPm: number;
@@ -170,6 +171,7 @@ app.get(
           sum: 0,
           count: 0,
           sumPresumed: 0,
+          countPresumed: 0,
           sumAm: 0,
           countAm: 0,
           sumPm: 0,
@@ -177,16 +179,22 @@ app.get(
         };
       }
 
-      inPeriod[startOfPeriod].sum += average;
-      inPeriod[startOfPeriod].count++;
-      inPeriod[startOfPeriod].sumPresumed += presumed;
+      if (!isNaN(average)) {
+        inPeriod[startOfPeriod].sum += average;
+        inPeriod[startOfPeriod].count++;
+      }
 
-      if (am !== null && am !== undefined) {
+      if (!isNaN(presumed)) {
+        inPeriod[startOfPeriod].sumPresumed += presumed;
+        inPeriod[startOfPeriod].countPresumed++;
+      }
+
+      if (!isNaN(am)) {
         inPeriod[startOfPeriod].sumAm += am;
         inPeriod[startOfPeriod].countAm++;
       }
 
-      if (pm !== null && pm !== undefined) {
+      if (!isNaN(pm)) {
         inPeriod[startOfPeriod].sumPm += pm;
         inPeriod[startOfPeriod].countPm++;
       }
@@ -198,7 +206,7 @@ app.get(
       results.push({
         start: startOfPeriod,
         average: stats.sum / stats.count,
-        averagePresumed: stats.sumPresumed / stats.count,
+        averagePresumed: stats.sumPresumed / stats.countPresumed,
         count: stats.count,
         averageAm: stats.countAm > 0 ? stats.sumAm / stats.countAm : null,
         countAm: stats.countAm,
