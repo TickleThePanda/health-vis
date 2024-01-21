@@ -20,6 +20,7 @@ const app: Application = express();
 
 import { expressjwt as jwt } from "express-jwt";
 import { logger, cors, noCache, requireAdmin } from "./middleware";
+import { addDays, differenceInCalendarDays, differenceInDays, formatISO, intervalToDuration, parseISO } from "date-fns";
 
 const secret = process.env.HEALTH_APP_SECRET_KEY;
 
@@ -98,7 +99,6 @@ function roundTo(num: number, places: number) {
 
 function createPredictor(data: WeightEntry[]) {
   const onlyFullEntries = data.filter(e => e.weightAm !== undefined && e.weightPm !== undefined);
-  console.log(onlyFullEntries)
   const stats = onlyFullEntries
     .map(e => e.weightPm - e.weightAm)
     .reduce(({ count, sum }, diff) => ({
@@ -106,10 +106,7 @@ function createPredictor(data: WeightEntry[]) {
       sum: sum + (isNaN(diff) ? 0 : diff )
     }), { count: 0, sum: 0 })
   
-  console.log(stats);
-  
   const averageDiff = roundTo(stats.sum / stats.count, 1);
-  console.log(averageDiff);
 
   return (actualAm: number | undefined, actualPm: number | undefined) => {
     if (actualAm === undefined && actualPm === undefined) {
@@ -121,6 +118,18 @@ function createPredictor(data: WeightEntry[]) {
 
     return average([am, pm]);
   }
+}
+
+type ExtendedWeightEntry = {
+  date: string,
+  am?: number,
+  pm?: number,
+  average?: number,
+  presumed?: number
+}
+
+type ResultForPeriod = {
+
 }
 
 app.get(
@@ -136,7 +145,7 @@ app.get(
 
     const predictor = createPredictor(data);
 
-    const values = data.map((d) => ({
+    const values: ExtendedWeightEntry[] = data.map((d) => ({
       date: d.date,
       am: d.weightAm,
       pm: d.weightPm,
@@ -144,7 +153,9 @@ app.get(
       presumed: predictor(d.weightAm, d.weightPm)
     }));
 
-    const inPeriod: Record<
+    const valuesWithMissing = predictMissing(values);
+
+    const byPeriod: Record<
       string,
       {
         sum: number;
@@ -158,7 +169,7 @@ app.get(
       }
     > = {};
 
-    for (let { date, am, pm, average, presumed } of values) {
+    for (let { date, am, pm, average, presumed } of valuesWithMissing) {
       const daysSinceEpoch = Math.trunc(Date.parse(date) / oneDayInMs);
       const daysOffset = daysSinceEpoch % period;
 
@@ -166,8 +177,8 @@ app.get(
         .toISOString()
         .substring(0, 10);
 
-      if (!inPeriod[startOfPeriod]) {
-        inPeriod[startOfPeriod] = {
+      if (!byPeriod[startOfPeriod]) {
+        byPeriod[startOfPeriod] = {
           sum: 0,
           count: 0,
           sumPresumed: 0,
@@ -180,34 +191,35 @@ app.get(
       }
 
       if (!isNaN(average)) {
-        inPeriod[startOfPeriod].sum += average;
-        inPeriod[startOfPeriod].count++;
+        byPeriod[startOfPeriod].sum += average;
+        byPeriod[startOfPeriod].count++;
       }
 
       if (!isNaN(presumed)) {
-        inPeriod[startOfPeriod].sumPresumed += presumed;
-        inPeriod[startOfPeriod].countPresumed++;
+        byPeriod[startOfPeriod].sumPresumed += presumed;
+        byPeriod[startOfPeriod].countPresumed++;
       }
 
       if (!isNaN(am)) {
-        inPeriod[startOfPeriod].sumAm += am;
-        inPeriod[startOfPeriod].countAm++;
+        byPeriod[startOfPeriod].sumAm += am;
+        byPeriod[startOfPeriod].countAm++;
       }
 
       if (!isNaN(pm)) {
-        inPeriod[startOfPeriod].sumPm += pm;
-        inPeriod[startOfPeriod].countPm++;
+        byPeriod[startOfPeriod].sumPm += pm;
+        byPeriod[startOfPeriod].countPm++;
       }
     }
 
     const results = [];
 
-    for (let [startOfPeriod, stats] of Object.entries(inPeriod)) {
+    for (let [startOfPeriod, stats] of Object.entries(byPeriod)) {
       results.push({
         start: startOfPeriod,
         average: stats.sum / stats.count,
-        averagePresumed: stats.sumPresumed / stats.countPresumed,
         count: stats.count,
+        averagePresumed: stats.sumPresumed / stats.countPresumed,
+        countPresumed: stats.countPresumed,
         averageAm: stats.countAm > 0 ? stats.sumAm / stats.countAm : null,
         countAm: stats.countAm,
         averagePm: stats.countPm > 0 ? stats.sumPm / stats.countPm : null,
@@ -277,6 +289,43 @@ app.post(
     res.json(data);
   })
 );
+
+function predictMissing(data: ExtendedWeightEntry[]): ExtendedWeightEntry[] {
+  const withMissing: ExtendedWeightEntry[] = [];
+  for (let i = 0; i < data.length - 1; i++) {
+    const currentEntry = data[i];
+    const nextEntry = data[i + 1];
+    
+    const currentDate = parseISO(currentEntry.date);
+    const nextDate = parseISO(nextEntry.date);
+
+    const startValue = currentEntry.presumed;
+    const endValue = nextEntry.presumed;
+
+    const daysBetween = differenceInCalendarDays(
+      nextDate,
+      currentDate
+    );
+
+    const averageDailyChange = (endValue - startValue) / daysBetween;
+
+    withMissing.push(currentEntry);
+
+
+    const daysToAdd = daysBetween - 1;
+
+    for (let j = 0; j < daysToAdd; j++) {
+      withMissing.push({
+        date: formatISO(addDays(currentDate, j + 1), { representation: "date" }),
+        presumed: startValue + averageDailyChange * j
+      });
+    }
+  }
+
+  withMissing.push(data[data.length - 1]);
+
+  return withMissing;
+}
 
 export default app;
 

@@ -46,8 +46,16 @@ export async function getAllWeight(): Promise<WeightEntry[]> {
     if (results[date] === undefined) {
       results[date] = {};
     }
+  
+    const weightText = item.Weight.S;
 
-    results[date][period] = parseFloat(item.Weight.S);
+    if (weightText === null || weightText === undefined) {
+      continue;
+    }
+    
+    const weight = parseFloat(item.Weight.S);
+
+    results[date][period] = weight;
   }
 
   return Object.entries(results)
